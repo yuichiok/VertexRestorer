@@ -68,6 +68,12 @@ namespace TTbarAnalysis
 		_colJetRelName,
 	    	std::string("FinalJets_rel")
 	    );
+	    _angleCut = 0.05;
+	    registerProcessorParameter("angleCut" , 
+	            "angle cut for association"  ,
+        	    _angleCut,
+           	 _angleCut
+	    );
 	    _offsetCut = 0.05;
 	    registerProcessorParameter("offsetCut" , 
 	            "Offset cut for association"  ,
@@ -288,9 +294,9 @@ namespace TTbarAnalysis
 			}
 			std::cout<<"|"<< id <<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
 		}
-		bool VertexRestorer::CompareParticles(const ReconstructedParticle * particle1, const ReconstructedParticle * particle2)
+		bool VertexRestorer::CompareParticles(const ReconstructedParticle * particle1, const ReconstructedParticle * particle2, bool verbose)
 		{
-			if (particle1->getCharge() != particle2->getCharge()) 
+			if (particle1->getCharge() * particle2->getCharge() < 0.0) 
 			{
 				return false;
 			}
@@ -310,7 +316,7 @@ namespace TTbarAnalysis
 		}
 		bool VertexRestorer::CompareParticles(const MCParticle * particle1, const ReconstructedParticle * particle2)
 		{
-			if (particle1->getCharge() != particle2->getCharge()) 
+			if (particle1->getCharge() * particle2->getCharge() < 0.0) 
 			{
 				return false;
 			}
@@ -334,13 +340,26 @@ namespace TTbarAnalysis
 			vector < ReconstructedParticle * > * result = new vector< ReconstructedParticle * >();
 			vector< ReconstructedParticle * > primaries = primary->getAssociatedParticle()->getParticles();
 			int number = sec->getNumberOfElements();
+			vector< ReconstructedParticle * > * particles = new vector< ReconstructedParticle * >();
+			for (int i = 0; i < number; i++) 
+			{
+				Vertex * secondary = dynamic_cast< Vertex * >(sec->getElementAt(i));
+				vector< ReconstructedParticle * > secondaries = secondary->getAssociatedParticle()->getParticles();
+				particles->reserve(particles->size() + secondaries.size());
+				particles->insert(particles->end(),secondaries.begin(),secondaries.end());
+			}
 
 			for (int i = 0; i < number; i++) 
 			{
 				Vertex * secondary = dynamic_cast< Vertex * >(sec->getElementAt(i));
-				vector< ReconstructedParticle * > additional = GetAdditionalParticles(primaries, secondary);
-				result->reserve(result->size() + additional.size());
-				result->insert(result->end(), additional.begin(),additional.end());
+				vector< ReconstructedParticle * > additional = GetAdditionalParticles(primaries, secondary, particles);
+				for (int j = 0; j < additional.size(); j++) 
+				{
+					if (!IsDublicate(additional[j], *result)) 
+					{
+						result->push_back(additional[j]);
+					}
+				}
 			}
 			return result;
 		}
@@ -386,11 +405,13 @@ namespace TTbarAnalysis
 				float offset = MathOperator::getDistanceTo(ip, direction, pos);
 				float deviation = GetDeviation(primaryTrack, pos);
 				float angle = MathOperator::getAngle(primaryTrack->getMomentum(), pos);
+				float p = MathOperator::getModule(primaryTrack->getMomentum());
+				float observable = 14-1.4*p;
 				if (abs(primaryTrack->getCharge()) > 0.0 
 				    && offset < _offsetCut  
-				    && angle < 0.05)
-				    //&& deviation < 10
-				    //&& !(MathOperator::getModule(primaryTrack->getMomentum()) > 5 && deviation > 6)) 
+				    && (deviation < observable || deviation < 2.0)
+				    && p > 0.5
+				    && angle < _angleCut)
 				{
 					std::cout << "Found a track with offset " << offset 
 						<< ", deviation " << deviation 
@@ -411,7 +432,7 @@ namespace TTbarAnalysis
 					if (!found) 
 					{
 						std::cout << "The particle is unique!\n";
-						if (!IsDublicate(primaryTrack,result)) 
+					//	if (!IsDublicate(primaryTrack,result)) 
 						{
 							result.push_back(CopyParticle(primaryTrack,sec));
 						}
@@ -434,13 +455,14 @@ namespace TTbarAnalysis
 			nouveau->addTrack(particle->getTracks()[0]); //CRUNCH
 			return nouveau;
 		}
-		float VertexRestorer::IsDublicate(const ReconstructedParticle * particle, vector< ReconstructedParticle * > & data)
+		bool VertexRestorer::IsDublicate(const ReconstructedParticle * particle, vector< ReconstructedParticle * > & data)
 		{
 			bool dublicate = false;
 			for (unsigned int j = 0; j < data.size(); j++) 
 			{
 				if (CompareParticles(particle, data[j])) 
 				{
+					std::cout << "Dublicate found!!!!\n";
 					dublicate = true;
 					break;
 				}

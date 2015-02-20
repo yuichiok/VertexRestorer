@@ -53,7 +53,7 @@ namespace TTbarAnalysis
 	  void PrintTrack(EVENT::Track * track); 
 	  void PrintParticle(EVENT::ReconstructedParticle * particle);
 
-	  bool CompareParticles(const EVENT::ReconstructedParticle * particle1, const EVENT::ReconstructedParticle * particle2); 
+	  bool CompareParticles(const EVENT::ReconstructedParticle * particle1, const EVENT::ReconstructedParticle * particle2, bool verbose = false); 
 	  bool CompareParticles(const EVENT::MCParticle * particle1, const EVENT::ReconstructedParticle * particle2); 
 	  void CompareCollections(std::vector< EVENT::ReconstructedParticle * > * detected, EVENT::LCCollection * missed, EVENT::LCCollection * bstar);
 	  std::vector< EVENT::ReconstructedParticle * > * RestoreVerticesPFO(EVENT::LCCollection * main, EVENT::LCCollection * sec); 
@@ -63,7 +63,7 @@ namespace TTbarAnalysis
 	  float GetDeviation(const EVENT::ReconstructedParticle * particle, double * pos);
 	  float GetError(const EVENT::ReconstructedParticle * particle);
 	  EVENT::ReconstructedParticle * CopyParticle(const EVENT::ReconstructedParticle * particle, const EVENT::Vertex * vertex);
-	  float IsDublicate(const EVENT::ReconstructedParticle * particle, std::vector< EVENT::ReconstructedParticle * > & data);
+	  bool IsDublicate(const EVENT::ReconstructedParticle * particle, std::vector< EVENT::ReconstructedParticle * > & data);
 	 protected:
 
 	  std::string _colName ;
@@ -104,6 +104,7 @@ namespace TTbarAnalysis
 
 
 	  float _offsetCut;
+	  float _angleCut;
 
 	  TFile* hfile ;
 	  std::string _hfilename ;
