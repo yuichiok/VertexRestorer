@@ -136,7 +136,7 @@ namespace TTbarAnalysis
 		}
 		if (isnan(acos((float)product/module1/module2))) 
 		{
-			std::cout << "DANGER!!!!\n";
+			//std::cout << "DANGER!!!!\n";
 			return 0.0;
 		}
 		return acos((float)product/module1/module2);
