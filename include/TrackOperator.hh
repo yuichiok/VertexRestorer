@@ -31,10 +31,11 @@ namespace TTbarAnalysis
 			virtual ~TrackOperator () {};
 			float GetOffset(EVENT::ReconstructedParticle * particle);
 			void PrintTrack(EVENT::Track * track);
+			float GetDistanceBtw(const EVENT::Vertex * ip, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
 			float GetError(EVENT::ReconstructedParticle * particle);
-			float GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, EVENT::Vertex * ip, double offset);
-
-			double * GetStartPoint(EVENT::ReconstructedParticle * particle);
+			float GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ip, double offset);
+			
+			double * GetStartPoint(const EVENT::ReconstructedParticle * particle);
 			void test();
 			void test(EVENT::ReconstructedParticle * particle);
 		//

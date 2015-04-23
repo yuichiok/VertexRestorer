@@ -193,6 +193,25 @@ namespace TTbarAnalysis
 		return vector1;
 	}
 
+	float MathOperator::getDistanceBtw(const double * vectorPoint1, vector< float > & vectorDirection1,const double * vectorPoint2, vector< float > & vectorDirection2 )
+	{
+		vector< float > * vproduct = vectorProduct(vectorDirection1,vectorDirection2);
+		float module = getModule(*vproduct);
+		if (module < 0.0001) 
+		{
+			std::cout << "Module is small!\n";
+			return 0.0;
+		}
+		float nominator = 0.0;
+		for (int i = 0; i < 3; i++) 
+		{
+			 nominator += vproduct->at(i) * (vectorPoint1[i] - vectorPoint2[i]);
+		}
+		delete vproduct;
+		return std::abs(nominator/module);
+
+	}
+
 	vector< float > * MathOperator::vectorProduct(const vector< float > & v1, const vector< float > & v2)
 	{
 		vector<float> * result = new vector<float>();

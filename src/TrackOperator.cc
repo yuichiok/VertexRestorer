@@ -28,13 +28,28 @@ namespace TTbarAnalysis
 		float offset = std::sqrt(d0*d0 + z0*z0);
 		return offset;
 	}
+	float TrackOperator::GetDistanceBtw(const Vertex * sec, const Vertex * ip, const ReconstructedParticle * particle)
+	{
+		double * trackPos = GetStartPoint(particle);
+		double * secPos = MathOperator::toDoubleArray(sec->getPosition(), 3);
+		double * ipPos = MathOperator::toDoubleArray(ip->getPosition(), 3);
+		double secDir[3];
+		for (int i = 0; i < 3; i++) 
+		{
+			secDir[i] = secPos[i] - ipPos[i];
+		}
+		vector<float> secDirection = MathOperator::getDirection(secDir);
+		vector<float> trackDirection = MathOperator::getDirection(particle->getMomentum());
+		float distance = MathOperator::getDistanceBtw(trackPos, trackDirection, secPos, secDirection);
+		return distance;
+	}
 	float TrackOperator::GetError(ReconstructedParticle * particle)
 	{
 		const vector<float> matrix = particle->getTracks()[0]->getCovMatrix();
 		float sigma = std::sqrt( matrix[0]*matrix[0] + matrix[9]*matrix[9] );
 		return sigma;
 	}
-	double * TrackOperator::GetStartPoint(ReconstructedParticle * particle)
+	double * TrackOperator::GetStartPoint(const ReconstructedParticle * particle)
 	{
 		double * start = new double[3];
 		Track * track = particle->getTracks()[0];
@@ -47,7 +62,7 @@ namespace TTbarAnalysis
 		return start;
 
 	}
-	float TrackOperator::GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, EVENT::Vertex * ipVertex, double offset)
+	float TrackOperator::GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ipVertex, double offset)
 	{
 		double p = MathOperator::getModule(particle->getMomentum());
 		double m = offset / p;
