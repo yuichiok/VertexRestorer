@@ -36,6 +36,7 @@ namespace TTbarAnalysis
 			float GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ip, double offset);
 			
 			double * GetStartPoint(const EVENT::ReconstructedParticle * particle);
+			float GetDprime(const EVENT::ReconstructedParticle * particle1, const EVENT::ReconstructedParticle * particle2, double * primaryPosition);
 			void test();
 			void test(EVENT::ReconstructedParticle * particle);
 		//

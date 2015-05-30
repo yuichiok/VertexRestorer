@@ -197,7 +197,7 @@ namespace TTbarAnalysis
 	{
 		vector< float > * vproduct = vectorProduct(vectorDirection1,vectorDirection2);
 		float module = getModule(*vproduct);
-		if (module < 0.0001) 
+		if (module < 0.0000000001) 
 		{
 			std::cout << "Module is small!\n";
 			return 0.0;

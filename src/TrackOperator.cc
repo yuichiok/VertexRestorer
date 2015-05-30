@@ -62,6 +62,40 @@ namespace TTbarAnalysis
 		return start;
 
 	}
+	float TrackOperator::GetDprime(const EVENT::ReconstructedParticle * particle1, const EVENT::ReconstructedParticle * particle2, double * primaryPosition)
+	{
+		double * secPos = GetStartPoint(particle1);
+		vector< float > secDir = MathOperator::getDirection(particle1->getMomentum());
+		float epsilon = MathOperator::getDistanceTo(primaryPosition, secDir, secPos);
+		
+		double * secPos1 = GetStartPoint(particle2);
+		vector< float > secDir1 = MathOperator::getDirection(particle2->getMomentum());
+		float epsilon1 = MathOperator::getDistanceTo(primaryPosition, secDir1, secPos1);
+		double side1[3];
+		double side2[3];
+		double vr[3];
+		for (int i = 0; i < 3; i++) 
+		{
+			side1[i] = primaryPosition[i] - secPos[i];
+			side2[i] = primaryPosition[i] - secPos1[i];
+			vr[i] = secPos[i] - secPos1[i];
+		}
+
+		float r = MathOperator::getDistance(secPos1, secPos);
+		//float tan = std::tan(MathOperator::getAngle(particle1->getMomentum(), particle2->getMomentum()) / 2.0);
+		float sinGamma = std::sin(MathOperator::getAngle(particle1->getMomentum(), particle2->getMomentum()));
+		float sinAlpha = std::sin(MathOperator::getAngle(particle1->getMomentum(), vr));
+		float sinBeta = std::sin(MathOperator::getAngle(particle2->getMomentum(), vr));
+
+		float dstar = r * sinAlpha * sinBeta / sinGamma;
+		//float dstar = r / 2.0 / tan;
+		//float median = std::sqrt(epsilon*epsilon + epsilon1*epsilon1 - r ) / 2.0;
+		float median = std::sqrt(MathOperator::getModule(side1)*MathOperator::getModule(side1)*2+MathOperator::getModule(side2)*MathOperator::getModule(side2)*2 - r*r) /2.0;
+		float dprime = std::sqrt(dstar * dstar + median * median);
+
+		return dprime;
+	}
+
 	float TrackOperator::GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ipVertex, double offset)
 	{
 		double p = MathOperator::getModule(particle->getMomentum());
