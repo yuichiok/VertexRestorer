@@ -6,10 +6,37 @@ using std::abs;
 using EVENT::Track;
 using EVENT::Vertex;
 using EVENT::ReconstructedParticle;
+using IMPL::ReconstructedParticleImpl;
 namespace TTbarAnalysis
 {
 	TrackOperator:: TrackOperator()
 	{
+	}
+	ReconstructedParticle * TrackOperator::ReconstructParticle(EVENT::Track *  track)
+	{
+		float Bz = 3.5;
+		float a = 3.0e-4;
+		float omega = track->getOmega();
+		float tanl = track->getTanLambda();
+		float phi = track->getPhi();
+		float pt = a * std::abs(Bz / omega);
+		//float p = pt * std::sqrt(1 + tanl * tanl);
+		
+		float * momentum = new float[3];
+		momentum[0] = pt * std::cos(phi);
+		momentum[1] = pt * std::sin(phi);
+		momentum[2] = pt * tanl;
+		float mass = 0.140;
+		float p = pt * sqrt( 1 + tanl * tanl );
+
+		float charge = Bz / omega / std::abs(Bz / omega);
+		ReconstructedParticleImpl * result = new ReconstructedParticleImpl();
+		result->setCharge(charge);
+		result->setMomentum(momentum);
+		result->addTrack(track);
+		result->setMass(mass);
+		result->setEnergy(sqrt(p*p + mass*mass));
+		return result;
 	}
 	float TrackOperator::GetOffset(ReconstructedParticle * particle)
 	{

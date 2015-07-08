@@ -10,6 +10,7 @@
 #include "TTree.h"
 #include <string>
 #include "MathOperator.hh"
+#include "RecoveryOperator.hh"
 #include "CheatOperator.hh"
 #include "MyReconstructedParticle.hh"
 #include "TrackOperator.hh"
@@ -20,10 +21,12 @@
 #include <UTIL/LCRelationNavigator.h>
 #include <UTIL/PIDHandler.h>
 #include <EVENT/LCCollection.h>
+#include <IMPL/LCCollectionVec.h>
 #include <EVENT/Vertex.h>
 #include <EVENT/Track.h>
 #include <EVENT/ParticleID.h>
 #include <IMPL/ParticleIDImpl.h>
+#include <IMPL/LCParametersImpl.h>
 using namespace lcio ;
 using namespace marlin ;
 
@@ -71,33 +74,37 @@ namespace TTbarAnalysis
 	  bool CompareParticles(const EVENT::MCParticle * particle1, const EVENT::ReconstructedParticle * particle2); 
 	  std::vector< EVENT::ReconstructedParticle * > * RestoreVerticesPFO(EVENT::LCCollection * main, EVENT::LCCollection * sec); 
 	  std::vector< EVENT::ReconstructedParticle * > * RestoreVertices(EVENT::Vertex * primary, EVENT::LCCollection * sec); 
-	  std::vector< MyReconstructedParticle * > * RestoreVertices(EVENT::LCCollection * sec, EVENT::LCCollection * rel, LCCollection * secvtx); 
+	  std::vector< MyReconstructedParticle * > * RestoreVertices(EVENT::LCCollection * sec, EVENT::LCCollection * rel, LCCollection * secvtx, EVENT::LCCollection * trashcol = NULL); 
 	  std::vector< EVENT::ReconstructedParticle * > * RestoreOneTrackVertices(EVENT::LCCollection * jet, EVENT::LCCollection * rel, EVENT::LCCollection * sec); 
 	  std::vector< EVENT::ReconstructedParticle * > GetAdditionalParticles(const std::vector< EVENT::ReconstructedParticle * > & pri, EVENT::Vertex * sec, const std::vector< EVENT::ReconstructedParticle * > * toCompare = NULL);
 	  std::vector< EVENT::ReconstructedParticle * > GetAdditionalParticles(const std::vector< EVENT::ReconstructedParticle * > & pri, const std::vector< EVENT::ReconstructedParticle * > * toCompare = NULL);
 	  
 	  EVENT::ReconstructedParticle * CopyParticle(const EVENT::ReconstructedParticle * particle, const EVENT::Vertex * vertex, float theta = 0.0);
-	  bool IsDublicate(const EVENT::ReconstructedParticle * particle, std::vector< EVENT::ReconstructedParticle * > & data);
+	  bool IsDublicate(const EVENT::ReconstructedParticle * particle, const std::vector< EVENT::ReconstructedParticle * > & data);
 	  bool IsDublicate(MyReconstructedParticle * particle, std::vector< MyReconstructedParticle * > & data);
 	  void AddParticleID(EVENT::ReconstructedParticle * particle, float theta);
 	  void AnalyseSecondaries(EVENT::LCCollection * main, EVENT::LCCollection * missed);
 	  bool IsParticleFromIP(const EVENT::ReconstructedParticle * particle);
 	  bool TakeParticle(EVENT::ReconstructedParticle * primary, const EVENT::Vertex * vertex, std::vector<double> * parameters = NULL);
 
-	  EVENT::MCParticle * CompareToCollection(EVENT::ReconstructedParticle * particle, EVENT::LCCollection * missed, EVENT::LCCollection * rel);
+	  EVENT::MCParticle * CompareToCollection(EVENT::ReconstructedParticle * particle, EVENT::LCCollection * missed, EVENT::LCCollection * rel, bool byTrack = false);
 	  void TestCollections(EVENT::LCCollection * tagged, EVENT::LCCollection * rel);
 	  float GetMinDiffDistance(const EVENT::ReconstructedParticle * candidate, const EVENT::Vertex * sec, float & obs);
 	  std::vector< float > ParametrizeVertex(const EVENT::Vertex * sec);
 
 	  void WritePrimaries(TrackOperator & opera, EVENT::LCCollection * pricol, EVENT::LCCollection * sec = NULL, EVENT::LCCollection * rel = NULL);
-	  void WritePurgatory(EVENT::LCCollection * pricol, EVENT::LCCollection * sec, EVENT::LCCollection * pfos);
+	  void WritePurgatory(EVENT::LCCollection * pricol, EVENT::LCCollection * sec, EVENT::LCCollection * pfos,EVENT::LCCollection * egprongs, EVENT::LCCollection * rel, EVENT::LCCollection * mc);
+	  void WriteZombies(EVENT::LCCollection * trashcol, EVENT::LCCollection * pfos, EVENT::LCCollection * egprongs, EVENT::LCCollection * rel, EVENT::LCCollection * trackrel);
 
 	  void TestMethod(EVENT::LCCollection * prongs, EVENT::LCCollection * pfo, EVENT::LCCollection * rel);
 	  void TestMethod2(EVENT::LCCollection * prongs, EVENT::LCCollection * pfo, EVENT::LCCollection * rel);
 	  void ClearVariables();
+	  MCParticle * GetInterestingParent(MCParticle * daughter);
+	  void CopyParameters(EVENT::LCParameters & from, EVENT::LCParameters & to); 
 	 protected:
 
 	  std::string _colName ;
+	  std::string _colTrashCanName ;
 	  std::string _colRelName ;
 	  std::string _colPriName ;
 	  std::string _colSecName ;
@@ -110,6 +117,11 @@ namespace TTbarAnalysis
 	  std::string _colBStarName ;
 	  std::string _colV0Name ;
 	  std::string _colEGPName;
+	  std::string _outputcolName;
+	  std::string _colSecRPName ;
+	  std::string _outputjetcolName;
+	  std::string _outputjetrelcolName;
+	  std::string _outputjetrelRPcolName;
 	 
 	  static const int MAXN = 30;
 	  float _fakeMomentum[MAXN];
@@ -123,6 +135,11 @@ namespace TTbarAnalysis
 	  float _bstarDeviation[MAXN];
 	  float _missedDeviation[MAXN];
 	  float _missedSecDeviation[MAXN];
+	  float _missedOffset[MAXN];
+	  int _missedVtxHits[MAXN];
+	  int _missedFtdHits[MAXN];
+	  int _fakeVtxHits[MAXN];
+	  int _fakeFtdHits[MAXN];
 
 	  float _fakeError[MAXN];
 	  float _bstarError[MAXN];
@@ -135,6 +152,12 @@ namespace TTbarAnalysis
 	  float _missedCostheta[MAXN];
 
 	  float _allmissedMomentum[MAXN];
+
+	  int _purDetected;
+	  float _purOffset[MAXN];
+	  float _purMomentum[MAXN];
+	  float _purAngle[MAXN];
+	  float _purCostheta[MAXN];
 	  
 	  float _missedAngle[MAXN];
 	  float _v0Angle[MAXN];
@@ -153,6 +176,8 @@ namespace TTbarAnalysis
 	  float _primeChi2[MAXP];
 	  float _primeCostheta[MAXP];
 	  int _primeVtxHits[MAXP];
+	  int _primeFtdHits[MAXP];
+	  int _primeEtdHits[MAXP];
 		
 	  int _purgatoryTotal;
 	  float _purgatoryOffset[MAXP];
@@ -162,10 +187,18 @@ namespace TTbarAnalysis
 	  float _purgatoryMomentum[MAXP];
 	  float _purgatoryCostheta[MAXP];
 	  int _purgatoryVtxHits[MAXP];
+	  int _purgatoryParent[MAXP];
 	  
 	  int _missedDetected;
 	  int _bstarDetected;
 	  int _fakeDetected;
+
+	  int _trashTotal;
+	  int _trashVtxHits[MAXP];
+	  int _trashTpcHits[MAXP];
+	  int _trashHasMCParticle[MAXP];
+	  int _trashIsReco[MAXP];
+	  int _trashIsDublicate[MAXP];
 
 	  int _missedTotal;
 	  int _bstarTotal;
@@ -205,9 +238,12 @@ namespace TTbarAnalysis
 	  TTree* _TestTree;
 	  TTree* _primaryTree;
 	  TTree* _purgatoryTree;
+	  TTree* _trashTree;
 	  TrackOperator myTrackOperator;
 	  EVENT::Vertex * myPrimary;
 
+
+	  int _totaltracks;
 	} ;
 }
 	#endif

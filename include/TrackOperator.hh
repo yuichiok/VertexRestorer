@@ -1,6 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <EVENT/ReconstructedParticle.h>
+#include <IMPL/ReconstructedParticleImpl.h>
 #include <EVENT/Track.h>
 #include <EVENT/Vertex.h>
 #include "MathOperator.hh"
@@ -31,6 +32,7 @@ namespace TTbarAnalysis
 			virtual ~TrackOperator () {};
 			float GetOffset(EVENT::ReconstructedParticle * particle);
 			void PrintTrack(EVENT::Track * track);
+			EVENT::ReconstructedParticle * ReconstructParticle(EVENT::Track *  track);
 			float GetDistanceBtw(const EVENT::Vertex * ip, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
 			float GetError(EVENT::ReconstructedParticle * particle);
 			float GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ip, double offset);
