@@ -4,6 +4,7 @@
 #include <cmath>
 #include <vector>
 #include <iostream>
+#include <time.h>
 namespace TTbarAnalysis 
 {
 	class MathOperator 
@@ -51,6 +52,7 @@ namespace TTbarAnalysis
 			static double * getPtOnVector(const double * momentum, const float * target);
 			static double getMissingPt(std::vector< const double * > & vectors, const float * target);
 			static double * toDoubleArray(const float * target, int size);
+			static float getRandom(double M, double N);
 		private:
 		//
 		//	Data

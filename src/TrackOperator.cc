@@ -93,11 +93,11 @@ namespace TTbarAnalysis
 	{
 		double * secPos = GetStartPoint(particle1);
 		vector< float > secDir = MathOperator::getDirection(particle1->getMomentum());
-		float epsilon = MathOperator::getDistanceTo(primaryPosition, secDir, secPos);
+		//float epsilon = MathOperator::getDistanceTo(primaryPosition, secDir, secPos);
 		
 		double * secPos1 = GetStartPoint(particle2);
 		vector< float > secDir1 = MathOperator::getDirection(particle2->getMomentum());
-		float epsilon1 = MathOperator::getDistanceTo(primaryPosition, secDir1, secPos1);
+		//float epsilon1 = MathOperator::getDistanceTo(primaryPosition, secDir1, secPos1);
 		double side1[3];
 		double side2[3];
 		double vr[3];
@@ -241,7 +241,7 @@ namespace TTbarAnalysis
 		Track * track = particle->getTracks()[0];
 		const vector<float> covMatrix = track->getCovMatrix();
 		float d0 = track->getD0();
-		float z0 = track->getZ0();
+		//float z0 = track->getZ0(); //CHECK
 		float phi0 = track->getPhi();
 		
 		float dxdd0 = - std::sin(phi0);

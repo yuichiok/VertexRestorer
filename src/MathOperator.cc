@@ -49,7 +49,7 @@ namespace TTbarAnalysis
 	float MathOperator::getModule(const vector< int > & v)
 	{
 	       float module = 0.0;
-	       for (int i = 0; i < v.size(); i++)
+	       for (unsigned int i = 0; i < v.size(); i++)
 	       {
 	               module += v[i]*v[i];
 	       }
@@ -60,7 +60,7 @@ namespace TTbarAnalysis
 	float MathOperator::getModule(const vector< float > & v)
 	{
 		float module = 0.0;
-		for (int i = 0; i < v.size(); i++)
+		for (unsigned int i = 0; i < v.size(); i++)
 		{
 		        module += v[i]*v[i];
 		}
@@ -220,6 +220,10 @@ namespace TTbarAnalysis
 		result->push_back(v1[0]*v2[1]-v1[1]*v2[0]);
 		return result;
 	}
+	float MathOperator::getRandom(double M, double N)
+	{
+		return M + (rand() / ( RAND_MAX / (N-M) ) ) ;
+	}
 
 	float MathOperator::getDistanceTo( const vector< int > & vectorPoint1, const vector< float > & vector1,const vector< int > * point )
 	{
@@ -371,7 +375,7 @@ namespace TTbarAnalysis
 		}
 		std::cout << '\n';*/
 		vector< float > direction = getDirection(converted);
-		double pt[3];
+		double * pt = new double[3];
 		double product = 0.0;
 		for (int i = 0; i < 3; i++) 
 		{
@@ -388,13 +392,13 @@ namespace TTbarAnalysis
 	{
 		double sum[3];
 		vector< double * > pts;
-		for (int i = 0; i < vectors.size(); i++) 
+		for (unsigned int i = 0; i < vectors.size(); i++) 
 		{
 			pts.push_back(getPtOnVector(vectors[i], target));
 		}
 		for (int i = 0; i < 3; i++) 
 		{
-			for (int j = 0; j < vectors.size(); j++) 
+			for (unsigned int j = 0; j < vectors.size(); j++) 
 			{
 				sum[i] += pts[j][i]; 
 			}

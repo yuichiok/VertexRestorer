@@ -11,7 +11,6 @@
 #include <string>
 #include "MathOperator.hh"
 #include "RecoveryOperator.hh"
-#include "CheatOperator.hh"
 #include "MyReconstructedParticle.hh"
 #include "TrackOperator.hh"
 #include <EVENT/ReconstructedParticle.h>
@@ -31,16 +30,12 @@ using namespace lcio ;
 using namespace marlin ;
 
 
-/** 
- *  <h4> ==== VertexRestorer Processor ==== </h4>
- *  
- * Used to bla bla
- * 
- * @param ROOTFileName: Name of the output ROOT file
- *   
- * @author Bilokin Sviatoslav, LAL
- * @version $Id: VertexRestorer.h,v 1.0 2010/02/18 Exp $ 
- */
+	////////////////////////////////////////////////////////
+	/// Author: BILOKIN Sviatoslav, PhD student	     ///
+	///	    POESCHL Roman, Supervisor		     ///
+	///	    RICHARD Francois, Supervisor	     ///
+	/// 				designed: 2015-2017  ///
+	////////////////////////////////////////////////////////
 
 namespace TTbarAnalysis
 {
@@ -60,6 +55,7 @@ namespace TTbarAnalysis
 	  virtual void end() ;
 	  
 	  void PrintTrack(EVENT::Track * track); 
+	  std::vector< Vertex * > * convert(const std::vector< LCObject * > & objs);
 	  void PrintParticle(EVENT::ReconstructedParticle * particle);
 	  float GetDeviation(const EVENT::ReconstructedParticle * particle, double * pos);
 	  float GetError(const EVENT::ReconstructedParticle * particle);
@@ -122,6 +118,7 @@ namespace TTbarAnalysis
 	  std::string _outputjetcolName;
 	  std::string _outputjetrelcolName;
 	  std::string _outputjetrelRPcolName;
+	  int _useTracks;
 	 
 	  static const int MAXN = 30;
 	  float _fakeMomentum[MAXN];
@@ -199,6 +196,7 @@ namespace TTbarAnalysis
 	  int _trashHasMCParticle[MAXP];
 	  int _trashIsReco[MAXP];
 	  int _trashIsDublicate[MAXP];
+	  float _trashCostheta[MAXP];
 
 	  int _missedTotal;
 	  int _bstarTotal;

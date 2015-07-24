@@ -37,6 +37,7 @@ namespace TTbarAnalysis
 			bool IsMinimalAngle(EVENT::ReconstructedParticle * candidate, EVENT::Vertex * chosen, std::vector< EVENT::Vertex * > * vertices);
 			
 			std::vector< EVENT::Vertex * > RecoverJetVertices(EVENT::LCCollection * jetcol, EVENT::LCCollection * jetrelcol, EVENT::LCCollection * secvtx,EVENT::LCCollection * damagedcol = NULL, EVENT::LCCollection * newjetrelcol = NULL);
+			std::vector< EVENT::Vertex * > RecoverBuildVertices(EVENT::LCCollection * secvtx,EVENT::LCCollection * damagedcol = NULL);
 			std::vector< EVENT::ReconstructedParticle * > AddParticles(const std::vector< EVENT::ReconstructedParticle * > & pri, EVENT::Vertex * sec, const std::vector< EVENT::ReconstructedParticle * > * toCompare = NULL, std::vector< EVENT::Vertex * > * allVtx = NULL);
 			bool TakeParticle(EVENT::ReconstructedParticle * primary, const EVENT::Vertex * vertex);
 			

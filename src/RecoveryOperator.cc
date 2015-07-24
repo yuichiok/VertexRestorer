@@ -146,6 +146,51 @@ namespace TTbarAnalysis
 		}
 		return result;
 	}
+	vector< Vertex * > RecoveryOperator::RecoverBuildVertices(LCCollection * secvtx,LCCollection * damagedcol)
+	{
+		vector< Vertex * > result;
+		int secnumber = secvtx->getNumberOfElements();
+		vector< Vertex * > * tagged = new vector< Vertex * > ();
+		vector< ReconstructedParticle * > * particles = getVertexParticles(secvtx, tagged);
+		vector< ReconstructedParticle * > zombies = getTrackParticles(damagedcol, particles);
+		vector< ReconstructedParticle * > pfo = getPFOParticles();
+		vector< ReconstructedParticle * > taken;
+		for (int i = 0; i < secnumber; i++) 
+		{
+			Vertex * vertex = dynamic_cast< Vertex * >(secvtx->getElementAt(i));
+			std::cout << "Vertex distance: " << MathOperator::getModule(vertex->getPosition()) 
+				<< " tracks " << vertex->getAssociatedParticle()->getParticles().size() 
+				<< " charge " << vertex->getAssociatedParticle()->getCharge() 
+				<< " chi2: " << vertex->getChi2()
+				<< " prob: " << vertex->getProbability()
+				<< "\n";
+			vector< ReconstructedParticle * > toInject;
+			toInject.reserve(pfo.size() + zombies.size());
+			toInject.insert(toInject.end(), zombies.begin(), zombies.end());
+			toInject.insert(toInject.end(), pfo.begin(), pfo.end());
+
+			vector< ReconstructedParticle * > additional = AddParticles(toInject, vertex, particles, tagged);
+			vector< ReconstructedParticle * > filtered;
+			for (unsigned int k = 0; k < additional.size(); k++) 
+			{
+				if (!IsDublicate(additional[k], taken)) 
+				{
+					PrintParticle(additional[k]);
+					myTotalTracksCounter++;
+					filtered.push_back(additional[k]);
+					taken.push_back(additional[k]);
+				}
+			}
+			Vertex * newvertex = CreateRecoveredVertex(filtered, vertex);
+			std::cout << "Vertex distance: " << MathOperator::getModule(newvertex->getPosition()) 
+				<< " tracks " << newvertex->getAssociatedParticle()->getParticles().size() 
+				<< " charge " << newvertex->getAssociatedParticle()->getCharge()
+				<< "\n"
+				<< "\n";
+			result.push_back(newvertex);
+		}
+		return result;
+	}
 	vector< ReconstructedParticle * > RecoveryOperator::AddParticles(const vector< ReconstructedParticle * > & pri, Vertex * sec, const vector< ReconstructedParticle * > * toCompare, vector< Vertex * > * allVtx)
 	{
 		vector< ReconstructedParticle * > result;
@@ -185,7 +230,7 @@ namespace TTbarAnalysis
 		float primaryOffset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
 		float accuracy = GetError(primary);
 		//float accuracy = std::sqrt(myTrackOperator.GetOffsetError(primary, trackPosition, myPrimary, primaryOffset));
-		float secondaryOffset = MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
+		//float secondaryOffset = MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
 		vector<float> diff = MathOperator::getDirection(secondaryPosition, trackPosition);
 		double diif[3];
 		for (int m = 0; m < 3; m++) 
@@ -193,16 +238,21 @@ namespace TTbarAnalysis
 			diif[m] = diff[m];
 		}
 		float angle = MathOperator::getAngle(diif, primary->getMomentum());
-		float secOffset =  MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
-		float costheta = std::cos(MathOperator::getAngles(direction)[1]); //std::abs( std::cos(MathOperator::getAngles(secDiraction)[1] ) );
+		//float secOffset =  MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
+		//float costheta = std::cos(MathOperator::getAngles(direction)[1]); //std::abs( std::cos(MathOperator::getAngles(secDiraction)[1] ) );
 		float dprime = myTrackOperator.GetDprime(primary, secondaries[0], primaryPosition);
-		float l = 0.0;// GetMinDiffDistance(primary, sec, dprime);// std::abs( distance / secondaryOffset -0.5 ) * cos;
+		//float l = 0.0;// GetMinDiffDistance(primary, sec, dprime);// std::abs( distance / secondaryOffset -0.5 ) * cos;
 		vector< float > limits = ParametrizeVertex(sec);
 		int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
+		//float p = MathOperator::getModule(sec->getAssociatedParticle()->getMomentum());
+		//float anglecut = 0.1 - 0.1/250 * p;
+		//float anglecut = 0.075 - 0.1*std::atan(p/5.0 - 10.0)/2.0/3.14;
+		//float anglecut = 0.1/1.78 - 0.1*std::atan(p/40.0 - 1.0)/1.7814;
+		float anglecut = 0.08;
 		//bool result = (primaryOffset /accuracy  > 40.0 * angle + 1.  || angle < 0.005)
 		bool result = (primaryOffset /accuracy  > 15.0 * sqrt( angle )+ .5  || angle < 0.001)
 			&& (vtxhits > 3 || angle < 0.001)
-			&& angle < .1;// + 0.03 * sine;
+			&& angle < anglecut;// + 0.03 * sine;
 		if (result) 
 		{
 			std::cout << "Found a track with offset " << primaryOffset
@@ -232,11 +282,11 @@ namespace TTbarAnalysis
 		newmomentum[1] = oldparticle->getMomentum()[1];
 		newmomentum[2] = oldparticle->getMomentum()[2];
 		//std::cout << "\tAssembling all prongs together\n";
-		for (int i = 0; i < oldparticle->getParticles().size(); i++) 
+		for (unsigned int i = 0; i < oldparticle->getParticles().size(); i++) 
 		{
 			newparticle->addParticle(oldparticle->getParticles()[i]);
 		}
-		for (int i = 0; i < newtracks.size(); i++) 
+		for (unsigned int i = 0; i < newtracks.size(); i++) 
 		{
 			newparticle->addParticle(newtracks.at(i));
 			newmomentum[0] += newtracks[i]->getMomentum()[0];
@@ -254,6 +304,7 @@ namespace TTbarAnalysis
 		//std::cout << "\tSetting associated particle\n";
 		newvertex->setAssociatedParticle(newparticle);
 		newvertex->setAlgorithmType("lcfiplus");
+		newvertex->addParameter (newtracks.size());
 		std::cout << "Finished vertex with " << newtracks.size() << " new tracks, "
 			<< newparticle->getMass() - oldparticle->getMass()  << " mass gain, "
 			<< newparticle->getCharge() - oldparticle->getCharge() << " charge difference\n";
@@ -330,7 +381,7 @@ namespace TTbarAnalysis
 		}
 		float mindprime = 1000;
 		float maxdprime = 0;
-		double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
+		//double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
 		//std::cout << "Vertex position: " << MathOperator::getModule(sec->getPosition()) << " Chi2: " << sec->getChi2() << "\n";
 		for (unsigned int i = 0; i < secondaries.size(); i++) 
 		{

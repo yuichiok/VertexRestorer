@@ -138,6 +138,12 @@ namespace TTbarAnalysis
 		_colJetRelName,
 	    	std::string("FinalJets_rel")
 	    );
+	    _useTracks = 0;
+	    registerProcessorParameter("UseTracks" , 
+	            "Use tracks for association"  ,
+        	    _useTracks,
+           	    _useTracks
+	    );
 	    _angleCut = 0.05;
 	    registerProcessorParameter("angleCut" , 
 	            "angle cut for association"  ,
@@ -231,7 +237,7 @@ namespace TTbarAnalysis
 	   _Tree->Branch("missedRecoMomentum", _missedRecoMomentum, "missedRecoMomentum[missedRecoTotal]/F");
 	   _Tree->Branch("missedRecoTheta", _missedRecoTheta, "missedRecoTheta[missedRecoTotal]/F");
 
-/*
+
 	   _primaryTree =  new TTree( "Primaries", "tree" );
 	   _primaryTree->Branch("primeZ", &_primeZ, "primeZ/F");
 	   _primaryTree->Branch("primeT", &_primeT, "primeT/F");
@@ -247,7 +253,7 @@ namespace TTbarAnalysis
 	   _primaryTree->Branch("primeVtxHits", &_primeVtxHits, "primeVtxHits[primariesTotal]/I");
 	   _primaryTree->Branch("primeFtdHits", &_primeFtdHits, "primeFtdHits[primariesTotal]/I");
 	   _primaryTree->Branch("primeEtdHits", &_primeEtdHits, "primeEtdHits[primariesTotal]/I");
-*/	   
+	   
 	   _purgatoryTree =  new TTree( "Purgatory", "tree" );
 	   _purgatoryTree->Branch("purgatoryTotal", &_purgatoryTotal, "purgatoryTotal/I");
 	   _purgatoryTree->Branch("purgatoryOffset", _purgatoryOffset, "purgatoryOffset[purgatoryTotal]/F");
@@ -266,6 +272,7 @@ namespace TTbarAnalysis
 	   _trashTree->Branch("trashHasMC", _trashHasMCParticle, "trashHasMC[trashTotal]/I");
 	   _trashTree->Branch("trashIsReco", _trashIsReco, "trashIsReco[trashTotal]/I");
 	   _trashTree->Branch("trashIsDublicate", _trashIsDublicate, "trashIsDublicate[trashTotal]/I");
+	   _trashTree->Branch("trashCostheta", _trashCostheta, "trashCostheta[trashTotal]/F");
 
 	   _TestTree =  new TTree( "Test", "tree" );
 	   /*_TestTree->Branch("ntotaltest", &_ntotaltest, "ntotaltest/I");
@@ -330,29 +337,62 @@ namespace TTbarAnalysis
 			vector<string> stringkeys;
 			from.getStringKeys(stringkeys);
 			//std::cout << "Int keys size: " << intkeys.size() << "\n";
-			for (int i = 0; i < intkeys.size(); i++) 
+			for (unsigned int i = 0; i < intkeys.size(); i++) 
 			{
 				vector<int> intvals;
 				from.getIntVals(intkeys[i], intvals);
 				//std::cout << "Int key "<< intkeys[i] << " has " << intvals.size() << " values\n";
 				to.setValues(intkeys[i], intvals);
 			}
-			//std::cout << "Float keys size: " << floatkeys.size() << "\n";
-			for (int i = 0; i < floatkeys.size(); i++) 
+			std::cout << "Float keys size: " << floatkeys.size() << "\n";
+			for (unsigned int i = 0; i < floatkeys.size(); i++) 
 			{
 				vector<float> floatvals;
 				from.getFloatVals(floatkeys[i], floatvals);
-				//std::cout << "Float key "<< floatkeys[i] << " has " << floatvals.size() << " values\n";
+				/*std::cout << "Float key "<< floatkeys[i] << " has " << floatvals.size() << " values\n";
+				for (int j = 0; j < floatvals.size(); j++) 
+				{
+					std::cout << "\t" << floatvals[j] <<"\n";
+				}*/
 				to.setValues(floatkeys[i], floatvals);
 			}
 			//std::cout << "String keys size: " << stringkeys.size() << "\n";
-			for (int i = 0; i < stringkeys.size(); i++) 
+			for (unsigned int i = 0; i < stringkeys.size(); i++) 
 			{
 				vector<string> stringvals;
 				from.getStringVals(stringkeys[i], stringvals);
-				//std::cout << "String key "<< stringkeys[i] << " has " << stringvals.size() << " values\n";
+				std::cout << "String key "<< stringkeys[i] << " has " << stringvals.size() << " values\n";
+				//	std::cout << "\t" << from.getStringVal(stringkeys[0]) <<"\n";
 				to.setValues(stringkeys[i], stringvals);
 			}
+		}
+		std::vector< Vertex * > * VertexRestorer::convert(const std::vector< LCObject * > & objs)
+		{
+			std::vector< Vertex * > * result = new std::vector< Vertex * >();
+			for (int i = 0; i < objs.size(); i++) 
+			{
+				result->push_back(dynamic_cast< Vertex * >(objs[i]));
+			}
+			return result;
+		}
+		
+		void VertexRestorer::PrintParticle(ReconstructedParticle * particle)
+		{
+			if (!particle) 
+			{
+				return;
+			}
+			int vtxhits = 0;
+			int tpchits = 0;
+			std::cout << std::fixed << std::setw( 6 ) << std::setprecision( 3 ) << std::setfill( ' ' );
+			//int id =  particle->getTracks()[0]->getSubdetectorHitNumbers()[4];
+			if (abs(particle->getCharge()) > 0.5) 
+			{
+				vtxhits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[0];
+				tpchits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[6];
+			}
+			//float chi2 = (particle->getTracks().size() > 0)? particle->getTracks()[0]->getChi2() / (float)particle->getTracks()[0]->getNdf() : -1.0;
+			std::cout<<"|"<<vtxhits << ":" <<tpchits<<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
 		}
 		void VertexRestorer::processEvent( LCEvent * evt ) 
 		{ 
@@ -361,42 +401,88 @@ namespace TTbarAnalysis
 			try 
 			{
 				std::cout << "********VertexRecovery*"<<_nEvt << "**********\n";
-				//TrackOperator opera;
+				TrackOperator opera;
 				//opera.test();
-				LCCollection* maincol = evt->getCollection( _colName );
-				LCCollection* seccol = evt->getCollection( _colSecName );
-				LCCollection* v0col = evt->getCollection( _colV0Name );
-				LCCollection* relation = evt->getCollection(_colRelName);
-				LCCollection* jetcol = evt->getCollection( _colJetName );
-				LCCollection* relcol = evt->getCollection( _colJetRelName );
+				LCCollection* trackrelcol = evt->getCollection( "MarlinTrkTracksMCTruthLink" );
 				LCCollection* pricol = evt->getCollection( _colPriName );
 				Vertex * primary = dynamic_cast< Vertex * >(pricol->getElementAt(0));
 				myPrimary = primary;
-				//vector < ReconstructedParticle * > * result = RestoreVerticesPFO(maincol, seccol);
-
-				LCCollection* trashcol =  evt->getCollection( _colTrashCanName );
-				//IMPL::LCCollectionVec * newjetcol = new IMPL::LCCollectionVec ( (const IMPL::LCCollectionVec&)(*jetcol) ) ;
-				IMPL::LCCollectionVec * newjetcol = new IMPL::LCCollectionVec ( EVENT::LCIO::RECONSTRUCTEDPARTICLE ) ;
+				LCCollection* v0col = evt->getCollection( _colV0Name );
+				LCCollection* maincol = evt->getCollection( _colName );
+				LCCollection* seccol = evt->getCollection( _colSecName );
+				LCCollection* relation = evt->getCollection(_colRelName);
 				LCCollection* secRPcol = evt->getCollection( _colSecRPName );
-				newjetcol->setSubset();
-				IMPL::LCCollectionVec * newjetrelcol = new IMPL::LCCollectionVec ( EVENT::LCIO::LCRELATION ) ;
+				LCCollection* jetcol = evt->getCollection( _colJetName );
+				LCCollection* relcol = evt->getCollection( _colJetRelName );
+				
+				RecoveryOperator recovery(primary, maincol);
+				std::cout << "HERE!";
+				LCCollection* trashcol = (_useTracks)? evt->getCollection( _colTrashCanName ) : NULL;
+				/*vector< Vertex * > newvertices = recovery.RecoverBuildVertices(seccol,trashcol);
 				IMPL::LCCollectionVec * newseccol = new IMPL::LCCollectionVec ( EVENT::LCIO::VERTEX ) ;
 				IMPL::LCCollectionVec * newvtxRPcol = new IMPL::LCCollectionVec ( EVENT::LCIO::RECONSTRUCTEDPARTICLE ) ;
-				RecoveryOperator recovery(primary, maincol);
-				vector< Vertex * > newvertices = recovery.RecoverJetVertices(jetcol,relcol,seccol,trashcol, newjetrelcol);
 				for (int i = 0; i < newvertices.size(); i++) 
 				{
 					newseccol->addElement(newvertices[i]);
 					newvtxRPcol->addElement(newvertices[i]->getAssociatedParticle());
 				}
+				CopyParameters(seccol->parameters (), newseccol->parameters ());
+				evt->addCollection( newseccol, _outputcolName ) ;
+				CopyParameters(secRPcol->parameters (), newvtxRPcol->parameters ());
+				evt->addCollection( newvtxRPcol, _outputjetrelRPcolName ) ;
+				*/
+				//vector < ReconstructedParticle * > * result = RestoreVerticesPFO(maincol, seccol);
+				
+				//LCCollection* trashcol = evt->getCollection( _colTrashCanName );
+				//IMPL::LCCollectionVec * newjetcol = new IMPL::LCCollectionVec ( (const IMPL::LCCollectionVec&)(*jetcol) ) ;
+				IMPL::LCCollectionVec * newjetcol = new IMPL::LCCollectionVec ( EVENT::LCIO::RECONSTRUCTEDPARTICLE ) ;
+				newjetcol->setSubset();
+				IMPL::LCCollectionVec * newjetrelcol = new IMPL::LCCollectionVec ( EVENT::LCIO::LCRELATION ) ;
+				IMPL::LCCollectionVec * newseccol = new IMPL::LCCollectionVec ( EVENT::LCIO::VERTEX ) ;
+				IMPL::LCCollectionVec * newvtxRPcol = new IMPL::LCCollectionVec ( EVENT::LCIO::RECONSTRUCTEDPARTICLE ) ;
+				vector< Vertex * > newvertices = recovery.RecoverJetVertices(jetcol,relcol,seccol,trashcol, newjetrelcol);
+				for (unsigned int i = 0; i < newvertices.size(); i++) 
+				{
+					newseccol->addElement(newvertices[i]);
+					newvtxRPcol->addElement(newvertices[i]->getAssociatedParticle());
+				}
+				LCRelationNavigator navigator(newjetrelcol);
+				CopyParameters(jetcol->parameters (), newjetcol->parameters ());
+				PIDHandler pidh(newjetcol);
+				int alid = pidh.getAlgorithmID("lcfiplus");
+				int newalid = pidh.addAlgorithm("vtxrec", pidh.getParameterNames (alid));
 				for (int i = 0; i < jetcol->getNumberOfElements(); i++) 
 				{
 					newjetcol->addElement(jetcol->getElementAt(i));
+					ReconstructedParticle * jetpart = dynamic_cast< ReconstructedParticle * >(newjetcol->getElementAt(i));
+					vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
+					vector<float> params;
+					const ParticleID& pid = ( pidh.getParticleID(jetpart,alid));
+					params = pid.getParameters();
+					float btag = params[pidh.getParameterIndex(alid,"BTag")];
+					bool changed = false;
+					float bmomentum = 0.0;
+					for (int j = 0; j < vertices->size(); j++) 
+					{
+						bmomentum += MathOperator::getModule(vertices->at(j)->getAssociatedParticle()->getMomentum());
+						if (vertices->at(j)->getParameters()[0] > 0.0) 
+						{
+							changed = true;
+						}
+						
+					}
+					float btag2 =  MathOperator::getRandom(btag , 1.0);//(btag + (1.0 - btag)/2.0
+					if (bmomentum > 15 && btag > 0.45 && changed) 
+					{
+						params[pidh.getParameterIndex(alid,"BTag")] = btag2;
+					}
+					std::cout << "BTAG: " << btag << " BTAG NEW: " << btag2 << " p: " << bmomentum  << "\n";
+					pidh.setParticleID(jetpart, 42, 9999, 0.0, newalid, params);
 				}
 				//EVENT::LCParameters * copiedparameters = new LCParametersImpl((const IMPL::LCParametersImpl&)jetcol->parameters ());
 				//EVENT::LCParameters * newparameters = newjetcol->parameters ();
 				//newparameters = copiedparameters;
-				CopyParameters(jetcol->parameters (), newjetcol->parameters ());
+				//CopyParameters(jetcol->parameters (), newjetcol->parameters ());
 				newjetcol->setSubset( true);
 				evt->addCollection( newjetcol, _outputjetcolName ) ;
 				CopyParameters(seccol->parameters (), newseccol->parameters ());
@@ -407,34 +493,34 @@ namespace TTbarAnalysis
 				evt->addCollection( newvtxRPcol, _outputjetrelRPcolName ) ;
 				_totaltracks += recovery.GetStatistics();
 				std::cout << "Total added tracks: " << _totaltracks << "\n";
-				//*/
+				///*/
 				//vector < MyReconstructedParticle * > * result = RefineVertices(maincol, seccol, v0col);
 				//vector < ReconstructedParticle * > * result = RestoreOneTrackVertices(jetcol, relcol, seccol);
 				
 				//vector < ReconstructedParticle * > * result = RestoreVertices(primary, seccol);
-			//	vector < MyReconstructedParticle * > * result = RestoreVertices(jetcol, relcol, seccol);
+				/*vector < MyReconstructedParticle * > * result = RestoreVertices(jetcol, relcol, seccol, trashcol);
 				//LCCollection* misscol = evt->getCollection( _colMissedName );
 				//LCCollection* missvtxcol =evt->getCollection( _colMissedVtxName );
-				/*LCCollection* bstarcol = evt->getCollection( _colBStarName );
+				LCCollection* bstarcol = evt->getCollection( _colBStarName );
 				//AnalyseSecondaries(maincol, misscol);
-				LCCollection* trackrelcol = evt->getCollection( "MarlinTrkTracksMCTruthLink" );
-				CompareCollectionsRel(result, evt->getCollection(_colEGPName), bstarcol , relation); // relation
-				//CompareCollections(result, misscol, bstarcol, missvtxcol);//*/
-				//_Tree->Fill();
+				CompareCollectionsRel(result, evt->getCollection(_colEGPName), bstarcol , trackrelcol); // relation
+				//CompareCollections(result, misscol, bstarcol, missvtxcol);//
+				_Tree->Fill();
 				//TestMethod2(evt->getCollection("MissedParticles"), seccol, evt->getCollection(_colRelName));
 				//_TestTree->Fill();
 				
-				//WritePrimaries(opera, pricol, evt->getCollection(_colEGPName), relation);
-				//WriteZombies(trashcol, maincol, evt->getCollection("MCParticlesSkimmed"), relation, trackrelcol);
-				//WritePurgatory(pricol, evt->getCollection( "FinalVertex" ), maincol, evt->getCollection(_colEGPName), relation, evt->getCollection("MCParticlesSkimmed"));
-				//_primaryTree->Fill();
-				//_purgatoryTree->Fill();
-				_trashTree->Fill();
+				WritePrimaries(opera, pricol, evt->getCollection(_colEGPName), relation);
+				WriteZombies(trashcol, maincol, evt->getCollection("MCParticlesSkimmed"), relation, trackrelcol);
+				WritePurgatory(pricol, evt->getCollection( "FinalVertex" ), maincol, evt->getCollection(_colEGPName), relation, evt->getCollection("MCParticlesSkimmed"));
+				_primaryTree->Fill();
+				_purgatoryTree->Fill();
+				_trashTree->Fill();//*/
 				ClearVariables();
 			}
 			catch( DataNotAvailableException &e)
 			{
 				std::cout << "Whoops!....\n";
+				std::cout << e.what();
 			}
 		    
 		}
@@ -485,6 +571,7 @@ namespace TTbarAnalysis
 				{
 					if (taken[j] == trashmc) 
 					{
+						std::cout << "Particle is dublicate\n";
 						_trashIsDublicate[i] = 1;
 					}
 				}
@@ -493,6 +580,8 @@ namespace TTbarAnalysis
 				std::cout << "MC p: " << MathOperator::getModule(trashmc->getMomentum())
 					  << " q: " << trashmc->getCharge()
 					  << "\n";
+				vector<float> direction = MathOperator::getDirection(trashmc->getMomentum());
+				_trashCostheta[i] = std::cos( MathOperator::getAngles(direction)[1]);
 				vector< LCObject * > obj = navigator.getRelatedFromObjects(trashmc);
 				vector< float > weights = navigator.getRelatedFromWeights(trashmc);
 				float maxweight = 0.5;
@@ -549,14 +638,6 @@ namespace TTbarAnalysis
 				_primeChi2[i] = primaries[i]->getTracks()[0]->getChi2()/(float)primaries[i]->getTracks()[0]->getNdf();
 				//_primeChi2[i] = primaries[i]->getTracks()[0]->getChi2();
 				_primeCostheta[i] = std::cos(MathOperator::getAngles(direction)[1]);
-				/*if (_primeCostheta[i] > 0) 
-				{
-					std::cout << "FORWARD!\n";
-				}
-				else 
-				{
-					std::cout << "BACKWARD!\n";
-				}*/
 				_primeVtxHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[0];
 				_primeFtdHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[5];
 				_primeEtdHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[10];
@@ -607,13 +688,6 @@ namespace TTbarAnalysis
 				particles->reserve(particles->size() + secondaries.size());
 				particles->insert(particles->end(),secondaries.begin(),secondaries.end());
 			}
-			/*for (int i = 0; i < v0number; i++) 
-			{
-				Vertex * secondary = dynamic_cast< Vertex * >(v0col->getElementAt(i));
-				vector< ReconstructedParticle * > secondaries = secondary->getAssociatedParticle()->getParticles();
-				particles->reserve(particles->size() + secondaries.size());
-				particles->insert(particles->end(),secondaries.begin(),secondaries.end());
-			}*/
 			int pfocharge = 0;
 			for (int i = 0; i < pfos->getNumberOfElements(); i++) 
 			{
@@ -735,7 +809,7 @@ namespace TTbarAnalysis
 			_bstarDetected = 0;
 			_fakeDetected = 0;
 			_purDetected = 0;
-			bool byTracks = false;
+			bool byTracks = true;
 			for (int i = 0; i < _detectedTotal; i++) 
 			{
 				float taken = false;
@@ -954,34 +1028,8 @@ namespace TTbarAnalysis
 				{
 					maxdprime = distance;
 				}
-				/*for (int j = i; j < secondaries.size(); j++) 
-				{
-					if (i == j) 
-					{
-						continue;
-					}
-					double * secPos1 = myTrackOperator.GetStartPoint(secondaries[j]);
-					vector< float > secDir1 = MathOperator::getDirection(secondaries[j]->getMomentum());
-
-					float dprime = myTrackOperator.GetDprime(secondaries[i], secondaries[j], primaryPosition);
-					float distance = MathOperator::getDistanceBtw(secPos, secDir, secPos1, secDir1);
-					//std::cout << "\td'= " << dprime << " l=" << distance << "\n";
-					if (dprime < mindprime) 
-					{
-						mindprime = dprime;
-					}
-					if (dprime > maxdprime) 
-					{
-						maxdprime = dprime;
-					}
-				}*/
 
 			}
-			/*if (secondaries.size() == 2) 
-			{
-				mindprime = mindprime - mindprime*0.05;
-				maxdprime = maxdprime + maxdprime*0.1;
-			}*/
 			//std::cout << "\tdmin'= " << mindprime << "\tdmax'= " << maxdprime << "\n";
 			result.push_back(mindprime);
 			result.push_back(maxdprime);
@@ -1048,9 +1096,9 @@ namespace TTbarAnalysis
 				vector< float > limits = ParametrizeVertex(sec);
 				int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
 				int ftdhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[5];
-				float anglecut = 0.1;//limits[1]*5.0+.05;
+				float anglecut = 0.06;//limits[1]*5.0+.05;
 				//bool result = //(primaryOffset /accuracy  > 1. + 40.*angle || angle < 0.005)
-				bool result = (primaryOffset /accuracy  > 0.5 + 15.0 * sqrt(angle) || angle < 0.005)
+				bool result = (primaryOffset /accuracy  > 11.0 * sqrt(angle) || angle < 0.005)
 					&& (vtxhits> 3  || angle < 0.001) // ||( abs(costheta) < 0.9 && vtxhits+ftdhits > 5 ) || angle < 0.001)
 					&& angle < anglecut; // angle < anglecut;// + 0.03 * sine;
 				if (result) 
@@ -1166,29 +1214,6 @@ namespace TTbarAnalysis
 
 		}
 
-		void VertexRestorer::PrintParticle(ReconstructedParticle * particle)
-		{
-			if (!particle) 
-			{
-				return;
-			}
-			int vtxhits = 0;
-			int tpchits = 0;
-			std::cout << std::fixed << std::setw( 6 ) << std::setprecision( 3 ) << std::setfill( ' ' );
-			//int id =  particle->getTracks()[0]->getSubdetectorHitNumbers()[4];
-			if (abs(particle->getCharge()) > 0.5) 
-			{
-				vtxhits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[0];
-				tpchits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[6];
-			}
-			/*if (particle->getParticleIDUsed()) 
-			{
-				std::cout << "Type " << particle->getParticleIDUsed()->getType() << '\n';
-				id = particle->getParticleIDs()[0]->getPDG(); 
-			}*/
-			float chi2 = (particle->getTracks().size() > 0)? particle->getTracks()[0]->getChi2() / (float)particle->getTracks()[0]->getNdf() : -1.0;
-			std::cout<<"|"<<vtxhits << ":" <<tpchits<<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
-		}
 		void VertexRestorer::AnalyseSecondaries(EVENT::LCCollection * main, EVENT::LCCollection * missed)
 		{
 			int mnumber = main->getNumberOfElements();
@@ -1677,18 +1702,6 @@ namespace TTbarAnalysis
 					double * secPos = myTrackOperator.GetStartPoint(particles[j]);
 					vector< float > secDir = MathOperator::getDirection(particles[j]->getMomentum());
 					double * vtxPos = MathOperator::toDoubleArray(recovtx->getPosition(),3);
-					/*vector<float> diff = MathOperator::getDirection(vtxPos, secPos);
-					double diif[3];
-					for (int m = 0; m < 3; m++) 
-					{
-						diif[m] = diff[m];
-					}
-					float distance = MathOperator::getAngle(diif, particles[j]->getMomentum());
-					std::cout << "i: " << i << " j: " << j << " distance: " << distance << "\n";
-
-					_testDistance[_ntest++] = distance;
-					vector< float > secDir = MathOperator::getDirection(particles[j]->getMomentum());
-					// */
 					for (int k = 0; k < j; k++) 
 					{
 						if (k == j)
@@ -1708,7 +1721,7 @@ namespace TTbarAnalysis
 				}
 				_testparameter[_ntest] = recovtx->getChi2();
 				_testDistance[_ntest++] = minDistance;
-			}
+			}//*/
 			/*int prongnumber = pfo->getNumberOfElements();
 			vector< ReconstructedParticle * > particles;
 			for (int i = 0; i < prongnumber; i++) 
@@ -1739,9 +1752,9 @@ namespace TTbarAnalysis
 				if (winner) 
 				{
 					
-				}*/
-			//}
-		}
+				}
+			*///}
+		}//*/
 		void VertexRestorer::TestCollections(EVENT::LCCollection * tagged, EVENT::LCCollection * pfo)
 		{
 			int pfonumber = pfo->getNumberOfElements();
