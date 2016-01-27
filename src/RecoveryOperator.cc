@@ -202,7 +202,8 @@ namespace TTbarAnalysis
 		for (unsigned int i = 0; i < pri.size(); i++) 
 		{
 			ReconstructedParticle * candidate = pri[i];
-			if (TakeParticle(candidate, sec) && IsMinimalAngle(candidate, sec, allVtx) && !IsDublicate(candidate, *particles)) 
+			//if (TakeParticle(candidate, sec) && IsMinimalAngle(candidate, sec, allVtx) && !IsDublicate(candidate, *particles)) 
+			if (TakeParticle(candidate, sec) && !IsDublicate(candidate, *particles)) 
 			{
 				result.push_back(candidate);
 			}
@@ -244,15 +245,25 @@ namespace TTbarAnalysis
 		//float l = 0.0;// GetMinDiffDistance(primary, sec, dprime);// std::abs( distance / secondaryOffset -0.5 ) * cos;
 		vector< float > limits = ParametrizeVertex(sec);
 		int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
+		int ftdhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[5];
+		float angleError = 1.0;
+		if (angle > 0.0) 
+		{
+			angleError = std::sqrt(myTrackOperator.GetAngleError(angle, sec, primary));
+		}
 		//float p = MathOperator::getModule(sec->getAssociatedParticle()->getMomentum());
 		//float anglecut = 0.1 - 0.1/250 * p;
 		//float anglecut = 0.075 - 0.1*std::atan(p/5.0 - 10.0)/2.0/3.14;
 		//float anglecut = 0.1/1.78 - 0.1*std::atan(p/40.0 - 1.0)/1.7814;
-		float anglecut = 0.08;
-		//bool result = (primaryOffset /accuracy  > 40.0 * angle + 1.  || angle < 0.005)
-		bool result = (primaryOffset /accuracy  > 15.0 * sqrt( angle )+ .5  || angle < 0.001)
-			&& (vtxhits > 3 || angle < 0.001)
-			&& angle < anglecut;// + 0.03 * sine;
+		float anglecut = 0.1;
+		bool result = (primaryOffset /accuracy  > 110.0 * angle + 0.2  || angle < 0.005) &&
+		//bool result = (primaryOffset /accuracy  > 75.0 * angle + 0.3  || angle < 0.005) &&
+		//bool result = (primaryOffset /accuracy  > 17.0 * sqrt( angle )  || angle < 0.001) &&
+		//	 (vtxhits > 1 || angle < 0.001) &&
+			//(((ftdhits > 0) && angle < anglecut/2) || (vtxhits > 1 && angle < anglecut));
+			(ftdhits > 0) && angle < anglecut/2;
+		//bool result =  (primaryOffset /accuracy  > 0.7 + 1.5 * angle / angleError) &&
+			 //angle < anglecut;// + 0.03 * sine;
 		if (result) 
 		{
 			std::cout << "Found a track with offset " << primaryOffset

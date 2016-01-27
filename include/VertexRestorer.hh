@@ -119,7 +119,7 @@ namespace TTbarAnalysis
 	  std::string _outputjetrelcolName;
 	  std::string _outputjetrelRPcolName;
 	  int _useTracks;
-	 
+	  int _Test;	 
 	  static const int MAXN = 30;
 	  float _fakeMomentum[MAXN];
 	  float _bstarMomentum[MAXN];
@@ -145,6 +145,7 @@ namespace TTbarAnalysis
 	  float _fakeObs[MAXN];
 	  float _missedObs[MAXN];
 
+	  float _fakeOffset[MAXN];
 	  float _fakeCostheta[MAXN];
 	  float _missedCostheta[MAXN];
 
@@ -184,6 +185,7 @@ namespace TTbarAnalysis
 	  float _purgatoryMomentum[MAXP];
 	  float _purgatoryCostheta[MAXP];
 	  int _purgatoryVtxHits[MAXP];
+	  int _purgatoryFtdHits[MAXP];
 	  int _purgatoryParent[MAXP];
 	  
 	  int _missedDetected;

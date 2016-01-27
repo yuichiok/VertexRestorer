@@ -122,6 +122,71 @@ namespace TTbarAnalysis
 
 		return dprime;
 	}
+	float TrackOperator::GetAngleError(float angle, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle)
+	{
+		double * trackPosition = GetStartPoint(particle);
+		const vector< float > vcovMatrix = sec->getCovMatrix();
+		const vector< float > ccovMatrix = getErrorPoint(particle);
+		vector< float > pcovMatrix(10, 0.0);
+		AlgebraImplementation::GetCovMatrixMomenta(particle, pcovMatrix);
+		vector< float > qcovMatrix;
+		for (int i = 0; i < 3; i++) 
+		{
+			qcovMatrix.push_back(vcovMatrix[i] + ccovMatrix[i]);
+		}
+		qcovMatrix.push_back(vcovMatrix[3]);
+		qcovMatrix.push_back(vcovMatrix[4]);
+		qcovMatrix.push_back(vcovMatrix[5] + ccovMatrix[3]);
+		double * vectorq = new double[3];
+		const double * vectorp = particle->getMomentum();
+		//std::cout << "Alpha = " << angle
+			  /*<< "\nqcovMatrix[0] = " << pcovMatrix[0] * 1000. 
+			  << "; qcovMatrix[1] = " << pcovMatrix[1] * 1000.
+			  << "; qcovMatrix[2] = " << pcovMatrix[2] * 1000.
+			  << "; qcovMatrix[3] = " << pcovMatrix[3] * 1000.
+			  << "; qcovMatrix[4] = " << ccovMatrix[4] * 1000.
+			  << "; qcovMatrix[5] = " << ccovMatrix[5] * 1000.*/
+		//	  << "\n";
+		for (int i = 0; i < 3; i++) 
+		{
+			vectorq[i] =  sec->getPosition()[i] - trackPosition[i];
+		}
+		float angleError = 0.0;
+		int index = -1;
+		for (int i = 0; i < 3; i++) 
+		{
+			for (int j = 0; j < 3; j++) 
+			{
+				if (j <= i)
+				{
+					index++;
+					float addq = dangledp(angle, vectorq, vectorp , i) * dangledp(angle, vectorq, vectorp , j) * qcovMatrix[index];
+					float addp = dangledp(angle, vectorp, vectorq , i) * dangledp(angle, vectorp, vectorq , j) * pcovMatrix[index];
+					angleError +=(i == j) ? addq + addq: 0.5*(addq + addq);
+				}
+
+			}
+		}
+		//std::cout << "Angle uncertainty = " << std::sqrt(angleError)  << "\n";
+		return angleError;
+	}
+	double TrackOperator::dangledp(float angle, const double * pvec, const double * qvec, int i)
+	{
+		float sinAngle = std::sin(angle);
+		float cosAngle = std::cos(angle);
+		float p = MathOperator::getModule(pvec);
+		float q = MathOperator::getModule(qvec);
+		float danglei = 1.0 / p / sinAngle * ( cosAngle * pvec[i] / p - qvec[i] / q);
+		return danglei;
+	}
+
+	
+	float TrackOperator::GetOffsetErrorSimple(EVENT::ReconstructedParticle * particle)
+	{
+		Track * track = particle->getTracks()[0];
+		const vector<float> covMatrix = track->getCovMatrix();
+		return  covMatrix[0] +  covMatrix[9];
+	}
 
 	float TrackOperator::GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ipVertex, double offset)
 	{
@@ -134,7 +199,9 @@ namespace TTbarAnalysis
 			vec[i] = trackPosition[i] - ip[i]; 
 		}
 		GConfig conf = {particle->getMomentum(), trackPosition, ip, m, p, vec};
-		const vector< float > pcovMatrix = particle->getCovMatrix();
+		//const vector< float > pcovMatrix = particle->getCovMatrix();
+		vector< float > pcovMatrix(10, 0.0);
+		AlgebraImplementation::GetCovMatrixMomenta(particle, pcovMatrix);
 		const vector< float > ccovMatrix = getErrorPoint(particle);
 		const vector< float > ipcovMatrix = ipVertex->getCovMatrix();
 		/*std::cout <<"\n!!!cCovMatrix:\n";
@@ -159,7 +226,7 @@ namespace TTbarAnalysis
 					index++;
 					//float ipError =(std::isnan(ipcovMatrix[index])) ? 0.0: ipcovMatrix[index];
 					float add = doffsetdp(conf, i) *  doffsetdp(conf, j) * pcovMatrix[index];// + doffsetdC(conf, i) *  doffsetdC(conf, j) * ipError;
-					result += (i != j)? 2*add : add;
+					result += (i != j)? 0.5*add : add;
 					//result += doffsetdp(conf, i) *  doffsetdp(conf, j) * pcovMatrix[index];
 					//result += doffsetdC(conf, i) *  doffsetdC(conf, j) * ipError;
 				}

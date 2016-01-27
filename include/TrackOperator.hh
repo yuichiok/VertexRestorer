@@ -5,6 +5,7 @@
 #include <EVENT/Track.h>
 #include <EVENT/Vertex.h>
 #include "MathOperator.hh"
+#include "AlgebraImplementation.hh"
 #ifndef TrackOperator_hh
 #define TrackOperator_hh 1
 namespace TTbarAnalysis
@@ -31,10 +32,12 @@ namespace TTbarAnalysis
 			TrackOperator ();
 			virtual ~TrackOperator () {};
 			float GetOffset(EVENT::ReconstructedParticle * particle);
+			float GetAngleError(float angle, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
 			void PrintTrack(EVENT::Track * track);
 			EVENT::ReconstructedParticle * ReconstructParticle(EVENT::Track *  track);
 			float GetDistanceBtw(const EVENT::Vertex * ip, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
 			float GetError(EVENT::ReconstructedParticle * particle);
+			float GetOffsetErrorSimple(EVENT::ReconstructedParticle * particle);
 			float GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ip, double offset);
 			
 			double * GetStartPoint(const EVENT::ReconstructedParticle * particle);
@@ -58,6 +61,7 @@ namespace TTbarAnalysis
 			void printConf(GConfig & conf);
 			double doffsetdC(GConfig & conf, int i);
 			double doffsetdp(GConfig & conf, int i);
+			double dangledp(float angle, const double * p, const double * q, int i);
 
 	};
 }
