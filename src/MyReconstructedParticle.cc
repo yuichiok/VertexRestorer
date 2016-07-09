@@ -13,6 +13,7 @@ namespace TTbarAnalysis
 		mySecOffset = value;
 		myAccuracy = value;
 		myObservable = value;
+		myZ = value;
 	}
 
 	ReconstructedParticle * MyReconstructedParticle::Get()
@@ -43,7 +44,19 @@ namespace TTbarAnalysis
 	{
 		myCos = value;
 	}
+	void MyReconstructedParticle::SetCosthetaVtx(float value)
+	{
+		myCosVtx = value;
+	}
+	void MyReconstructedParticle::SetZ(float value)
+	{
+		myZ = value;
+	}
 
+	float MyReconstructedParticle::GetCosthetaVtx()
+	{
+		return myCosVtx;
+	}
 	float MyReconstructedParticle::GetCostheta()
 	{
 		return myCos;
@@ -67,6 +80,10 @@ namespace TTbarAnalysis
 	float MyReconstructedParticle::GetObservable()
 	{
 		return myObservable;
+	}
+	float MyReconstructedParticle::GetZ()
+	{
+		return myZ;
 	}
 	//void SetAngle(float angle);
 	

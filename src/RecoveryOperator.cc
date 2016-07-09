@@ -78,6 +78,11 @@ namespace TTbarAnalysis
 		{
 			Track * track = dynamic_cast<Track *>(trash->getElementAt(i));
 			ReconstructedParticle * particle = myTrackOperator.ReconstructParticle(track);
+			if (!secparticles) 
+			{
+				result.push_back(particle);
+				continue;
+			}
 			if (!IsDublicate(particle, *secparticles)) 
 			{
 				result.push_back(particle);
@@ -93,7 +98,7 @@ namespace TTbarAnalysis
 		LCRelationNavigator navigator(jetrelcol);
 		vector< Vertex * > * tagged = new vector< Vertex * > ();
 		vector< ReconstructedParticle * > * particles = getVertexParticles(secvtx, tagged);
-		vector< ReconstructedParticle * > zombies = getTrackParticles(damagedcol, particles);
+		vector< ReconstructedParticle * > zombies = getTrackParticles(damagedcol, particles); // CHANGED
 		vector< ReconstructedParticle * > pfo = getPFOParticles();
 		vector< ReconstructedParticle * > taken;
 		for (int i = 0; i < jnumber; i++) 
@@ -102,6 +107,7 @@ namespace TTbarAnalysis
 			int nvtx = navigator.getRelatedToObjects(jet).size();
 			std::cout << "Jet energy: " << jet->getEnergy() << "\n";
 			vector< LCObject * > objs = navigator.getRelatedToObjects(jet);
+			vector< Vertex * > oldvtx;
 			for (int j = 0; j < nvtx; j++) 
 			{
 				Vertex * vertex = dynamic_cast< Vertex * >(objs[j]);
@@ -110,14 +116,15 @@ namespace TTbarAnalysis
 					<< " charge " << vertex->getAssociatedParticle()->getCharge() 
 					<< " chi2: " << vertex->getChi2()
 					<< " prob: " << vertex->getProbability()
+					<< " algo: " << vertex->getAlgorithmType()
 					<< "\n";
 				vector< ReconstructedParticle * > toInject;
 				//toInject.reserve(jet->getParticles().size() + zombies.size());
-				toInject.reserve(pfo.size() + jet->getParticles().size());
+				toInject.reserve(jet->getParticles().size()+ zombies.size());
 				
 				toInject.insert(toInject.end(), jet->getParticles().begin(), jet->getParticles().end());
 				toInject.insert(toInject.end(), zombies.begin(), zombies.end());
-				toInject.insert(toInject.end(), pfo.begin(), pfo.end());
+				//toInject.insert(toInject.end(), pfo.begin(), pfo.end());
 
 				vector< ReconstructedParticle * > additional = AddParticles(toInject, vertex, particles, tagged);
 				vector< ReconstructedParticle * > filtered;
@@ -131,16 +138,26 @@ namespace TTbarAnalysis
 						taken.push_back(additional[k]);
 					}
 				}
-				Vertex * newvertex = CreateRecoveredVertex(filtered, vertex);
+				Vertex * newvertex = CreateRecoveredVertex(filtered, vertex, true);
 				std::cout << "Vertex distance: " << MathOperator::getModule(newvertex->getPosition()) 
 					<< " tracks " << newvertex->getAssociatedParticle()->getParticles().size() 
 					<< " charge " << newvertex->getAssociatedParticle()->getCharge()
 					<< "\n"
 					<< "\n";
-				result.push_back(newvertex);
+				//result.push_back(newvertex);
+				oldvtx.push_back(newvertex);
 				if (newjetrelcol) 
 				{
-					newjetrelcol->addElement(CreateNewRelation(newvertex, jet));
+					//newjetrelcol->addElement(CreateNewRelation(newvertex, jet));
+				}
+			}
+			vector< Vertex * > newvtx = oldvtx;//RefineJetVertices(oldvtx);
+			for (int j = 0; j < newvtx.size(); j++) 
+			{
+				result.push_back(newvtx[j]);	
+				if (newjetrelcol) 
+				{
+					newjetrelcol->addElement(CreateNewRelation(newvtx[j], jet));
 				}
 			}
 		}
@@ -194,7 +211,7 @@ namespace TTbarAnalysis
 	vector< ReconstructedParticle * > RecoveryOperator::AddParticles(const vector< ReconstructedParticle * > & pri, Vertex * sec, const vector< ReconstructedParticle * > * toCompare, vector< Vertex * > * allVtx)
 	{
 		vector< ReconstructedParticle * > result;
-		if (sec->getAssociatedParticle()->getParticles().size() < 2) 
+		if (sec->getAssociatedParticle()->getParticles().size() < 1) 
 		{
 			return result;
 		}
@@ -202,10 +219,14 @@ namespace TTbarAnalysis
 		for (unsigned int i = 0; i < pri.size(); i++) 
 		{
 			ReconstructedParticle * candidate = pri[i];
-			//if (TakeParticle(candidate, sec) && IsMinimalAngle(candidate, sec, allVtx) && !IsDublicate(candidate, *particles)) 
-			if (TakeParticle(candidate, sec) && !IsDublicate(candidate, *particles)) 
+			if (TakeParticle(candidate, sec) && IsMinimalAngle(candidate, sec, allVtx) && !IsDublicate(candidate, *particles)) 
+			//if (TakeParticle(candidate, sec) && !IsDublicate(candidate, *particles)) 
+			//if (TakeParticle(candidate, sec)) 
 			{
-				result.push_back(candidate);
+				if (!IsDublicate(candidate, result)) 
+				{
+					result.push_back(candidate);
+				}
 			}
 		}
 		return result;
@@ -229,8 +250,8 @@ namespace TTbarAnalysis
 		double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
 		double * secondaryPosition = MathOperator::toDoubleArray(sec->getPosition(),3);
 		float primaryOffset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
-		float accuracy = GetError(primary);
-		//float accuracy = std::sqrt(myTrackOperator.GetOffsetError(primary, trackPosition, myPrimary, primaryOffset));
+		//float accuracy = GetError(primary);
+		float accuracy = myTrackOperator.GetOffsetErrorSimple(primary);
 		//float secondaryOffset = MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
 		vector<float> diff = MathOperator::getDirection(secondaryPosition, trackPosition);
 		double diif[3];
@@ -241,41 +262,55 @@ namespace TTbarAnalysis
 		float angle = MathOperator::getAngle(diif, primary->getMomentum());
 		//float secOffset =  MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
 		//float costheta = std::cos(MathOperator::getAngles(direction)[1]); //std::abs( std::cos(MathOperator::getAngles(secDiraction)[1] ) );
-		float dprime = myTrackOperator.GetDprime(primary, secondaries[0], primaryPosition);
+		//float dprime = myTrackOperator.GetDprime(primary, secondaries[0], primaryPosition);
 		//float l = 0.0;// GetMinDiffDistance(primary, sec, dprime);// std::abs( distance / secondaryOffset -0.5 ) * cos;
-		vector< float > limits = ParametrizeVertex(sec);
+		//vector< float > limits = ParametrizeVertex(sec);
 		int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
 		int ftdhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[5];
+		float costheta = std::cos(MathOperator::getAngles(direction)[1]); //std::abs( std::cos(MathOperator::getAngles(secDiraction)[1] ) );
 		float angleError = 1.0;
 		if (angle > 0.0) 
 		{
 			angleError = std::sqrt(myTrackOperator.GetAngleError(angle, sec, primary));
 		}
+		if ( std::abs(costheta) > 0.9 && vtxhits == 0 ) 
+		{
+			//accuracy = 4*GetError(primary);
+		}
 		//float p = MathOperator::getModule(sec->getAssociatedParticle()->getMomentum());
 		//float anglecut = 0.1 - 0.1/250 * p;
 		//float anglecut = 0.075 - 0.1*std::atan(p/5.0 - 10.0)/2.0/3.14;
 		//float anglecut = 0.1/1.78 - 0.1*std::atan(p/40.0 - 1.0)/1.7814;
-		float anglecut = 0.1;
-		bool result = (primaryOffset /accuracy  > 110.0 * angle + 0.2  || angle < 0.005) &&
-		//bool result = (primaryOffset /accuracy  > 75.0 * angle + 0.3  || angle < 0.005) &&
-		//bool result = (primaryOffset /accuracy  > 17.0 * sqrt( angle )  || angle < 0.001) &&
-		//	 (vtxhits > 1 || angle < 0.001) &&
-			//(((ftdhits > 0) && angle < anglecut/2) || (vtxhits > 1 && angle < anglecut));
-			(ftdhits > 0) && angle < anglecut/2;
+		float p = MathOperator::getModule(primary->getMomentum());
+		float anglecut = 0.08; // 0.08
+		float deviation = myTrackOperator.GetOffsetSignificance(primary);
+		//float deviation = primaryOffset /accuracy;
+		//bool result = (primaryOffset /accuracy  > 110.0 * angle + 0.2  || angle < 0.005) &&
+		//bool result = (primaryOffset /accuracy  > 80.0 * angle + 0.5 || angle < 0.005) && // BEST
+		//bool result = (primaryOffset /accuracy  > 50.0 * angle + 2. || angle < 0.005) && // BETTER
+		bool result = ( deviation > 50.0 * angle + 2. || angle < 0.005) &&
+		//bool result = (primaryOffset /accuracy  > 15.0 * sqrt( angle )  || angle < 0.001) &&
+		//bool result = (primaryOffset /accuracy  > 2.2 *std::atan(angle * 100) || angle < 0.005)   &&
+		//bool result = (primaryOffset /accuracy  > 17.0 * sqrt( angle )+0.4  || angle < 0.001) &&
+			 //(vtxhits > 2 || angle < 0.001) &&
+			//(((ftdhits > 0) && angle < anglecut) || (vtxhits > 1 && angle < anglecut)) &&
+			//p > 0.3 &&
+
+			//(ftdhits > 0) && angle < anglecut/2;
 		//bool result =  (primaryOffset /accuracy  > 0.7 + 1.5 * angle / angleError) &&
-			 //angle < anglecut;// + 0.03 * sine;
+			 angle < anglecut;// + 0.03 * sine;
 		if (result) 
 		{
 			std::cout << "Found a track with offset " << primaryOffset
 				<< ", error " << accuracy//GetError(primary) 
 				<< ", Angle " << angle //GetError(primary) 
-				<< ", DISTANCE " << dprime - MathOperator::getModule(secondaryPosition) //distance//GetError(primary) 
+				//<< ", DISTANCE " << dprime - MathOperator::getModule(secondaryPosition) //distance//GetError(primary) 
 				<< ", position " << trackDistance
 				<<" :\n";//*/
 		}
 		return result;
 	}
-	Vertex * RecoveryOperator::CreateRecoveredVertex(vector< ReconstructedParticle * > & newtracks, Vertex * oldvertex)
+	Vertex * RecoveryOperator::CreateRecoveredVertex(vector< ReconstructedParticle * > & newtracks, Vertex * oldvertex, bool add)
 	{
 		//std::cout << "Start to create new vertex\n";
 		VertexImpl * newvertex = new VertexImpl();
@@ -287,15 +322,18 @@ namespace TTbarAnalysis
 		ReconstructedParticle * oldparticle = oldvertex->getAssociatedParticle();
 		ReconstructedParticleImpl * newparticle = new ReconstructedParticleImpl();
 		double newmomentum[3];
-		float newenergy = oldparticle->getEnergy();
-		float newcharge = oldparticle->getCharge();
-		newmomentum[0] = oldparticle->getMomentum()[0];
-		newmomentum[1] = oldparticle->getMomentum()[1];
-		newmomentum[2] = oldparticle->getMomentum()[2];
+		float newenergy = (!add)?0:oldparticle->getEnergy();
+		float newcharge = (!add)?0:oldparticle->getCharge();
+		newmomentum[0] = (!add)?0:oldparticle->getMomentum()[0];
+		newmomentum[1] = (!add)?0:oldparticle->getMomentum()[1];
+		newmomentum[2] = (!add)?0:oldparticle->getMomentum()[2];
 		//std::cout << "\tAssembling all prongs together\n";
-		for (unsigned int i = 0; i < oldparticle->getParticles().size(); i++) 
+		if (add) 
 		{
-			newparticle->addParticle(oldparticle->getParticles()[i]);
+			for (unsigned int i = 0; i < oldparticle->getParticles().size(); i++) 
+			{
+				newparticle->addParticle(oldparticle->getParticles()[i]);
+			}
 		}
 		for (unsigned int i = 0; i < newtracks.size(); i++) 
 		{
@@ -376,7 +414,16 @@ namespace TTbarAnalysis
 		float recomodule = MathOperator::getModule(particle2->getMomentum());
 		float mcmodule = MathOperator::getModule(particle1->getMomentum());
 		float ratio = (1 - recomodule/mcmodule > 0.0) ? 1 - recomodule/mcmodule : recomodule/mcmodule - 1.0;
-		if (ratio > 0.04) 
+		if (abs(particle2->getCharge()) > 0.9 && abs(particle1->getCharge())  > 0.9) 
+		{
+			int vtxhits2 =  particle2->getTracks()[0]->getSubdetectorHitNumbers()[0];
+			int vtxhits1 =  particle1->getTracks()[0]->getSubdetectorHitNumbers()[0];
+			if ((vtxhits1 && !vtxhits2) || (vtxhits2 && !vtxhits1)) 
+			{
+				return angle < 0.005;
+			}
+		}
+		if (ratio > 0.1) 
 		{
 			return false;
 		}
@@ -459,6 +506,58 @@ namespace TTbarAnalysis
 	int RecoveryOperator::GetStatistics()
 	{
 		return myTotalTracksCounter;
+	}
+	vector< Vertex * > RecoveryOperator::RefineJetVertices(vector< Vertex * > & oldvtx)//ReconstructedParticle * oldjet, EVENT::LCCollection * jetrelcol)
+	{
+		//LCRelationNavigator navigator(jetrelcol);
+		//std::cout << "Jet energy: " << jet->getEnergy() << "\n";
+		//vector< LCObject * > objs = navigator.getRelatedToObjects(jet);
+		//vector< Vertex * > oldvtx;
+		int nvtx = oldvtx.size();
+		vector<ReconstructedParticle *> trackpool;
+		for (int i = 0; i < nvtx; i++) 
+		{
+			Vertex * vertex = oldvtx[i];
+			trackpool.reserve(trackpool.size() + vertex->getAssociatedParticle()->getParticles().size());
+			trackpool.insert(trackpool.end(), vertex->getAssociatedParticle()->getParticles().begin(), vertex->getAssociatedParticle()->getParticles().end());
+		}	
+		if (nvtx != 2) 
+		{
+			return oldvtx;
+		}
+		vector<ReconstructedParticle *> newvtx1particles;
+		vector<ReconstructedParticle *> newvtx2particles;
+		double * secondaryPosition1 = MathOperator::toDoubleArray(oldvtx[0]->getPosition(),3);
+		double * secondaryPosition2 = MathOperator::toDoubleArray(oldvtx[1]->getPosition(),3);
+		for (int i = 0; i < trackpool.size(); i++) 
+		{
+			ReconstructedParticle * particle = trackpool[i];
+			double * trackPosition = myTrackOperator.GetStartPoint(particle);
+			vector<float> diff1 = MathOperator::getDirection(secondaryPosition1, trackPosition);
+			vector<float> diff2 = MathOperator::getDirection(secondaryPosition2, trackPosition);
+			double diif1[3];
+			double diif2[3];
+			for (int m = 0; m < 3; m++) 
+			{
+				diif1[m] = diff1[m];
+				diif2[m] = diff2[m];
+			}
+			float angle1 = MathOperator::getAngle(diif1, particle->getMomentum());
+			float angle2 = MathOperator::getAngle(diif2, particle->getMomentum());
+			if (angle1 < angle2) 
+			{
+				newvtx1particles.push_back(particle);
+			}
+			else 
+			{
+				newvtx2particles.push_back(particle);
+			}
+		}
+		vector<Vertex * > result;
+		result.push_back(CreateRecoveredVertex(newvtx1particles, oldvtx[0], false));
+		result.push_back(CreateRecoveredVertex(newvtx2particles, oldvtx[1], false));
+		std::cout << "Momentum: " << MathOperator::getModule(result[0]->getAssociatedParticle()->getMomentum()) << "\n";
+		return result;
 	}
 
 }

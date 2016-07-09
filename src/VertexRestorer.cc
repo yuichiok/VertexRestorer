@@ -124,6 +124,12 @@ namespace TTbarAnalysis
 		    _colBStarName ,
 		    std::string("BStar")
 	    );
+	    registerInputCollection( LCIO::VERTEX,
+	    	"MCVertexCollectionName",
+		"Name of the MCVertex collection",
+		_colMCvertexName,
+	    	std::string("MCVertex")
+	    );
 	    registerInputCollection( LCIO::MCPARTICLE,
 		    "EGProngsCollectionName" , 
 		    "Name of the EGProngs collection"  ,
@@ -205,19 +211,24 @@ namespace TTbarAnalysis
 	   _Tree->Branch("missedOffset", _missedOffset, "missedOffset[missedDetected]/F");
 	   _Tree->Branch("missedAngle", _missedAngle, "missedAngle[missedDetected]/F");
 	   _Tree->Branch("missedObs", _missedObs, "missedObs[missedDetected]/F");
+	   _Tree->Branch("missedZ", _missedZ, "missedZ[missedDetected]/F");
 	   _Tree->Branch("missedVtxHits", _missedVtxHits, "missedVtxHits[missedDetected]/I");
 	   _Tree->Branch("missedFtdHits", _missedFtdHits, "missedFtdHits[missedDetected]/I");
 	   _Tree->Branch("missedDeviation", _missedDeviation, "missedDeviation[missedDetected]/F");
+	   _Tree->Branch("missedD0Deviation", _missedD0Deviation, "missedD0Deviation[missedDetected]/F");
+	   _Tree->Branch("missedZ0Deviation", _missedZ0Deviation, "missedZ0Deviation[missedDetected]/F");
+	   _Tree->Branch("missedZ0", _missedZ0, "missedZ0[missedDetected]/F");
 	   _Tree->Branch("missedPvtx", _missedSecDeviation, "missedPvtx[missedDetected]/F");
 	   _Tree->Branch("missedCostheta", _missedCostheta, "missedCostheta[missedDetected]/F");
+	   _Tree->Branch("missedCosthetaVtx", _missedCosthetaVtx, "missedCosthetaVtx[missedDetected]/F");
 	   
-	   _Tree->Branch("bstarDetected", &_bstarDetected, "bstarDetected/I");
+/*	   _Tree->Branch("bstarDetected", &_bstarDetected, "bstarDetected/I");
 	   _Tree->Branch("bstarMomentum", _bstarMomentum, "bstarMomentum[bstarDetected]/F");
 	   _Tree->Branch("bstarError", _bstarError, "bstarError[bstarDetected]/F");
 	   _Tree->Branch("bstarAngle", _bstarAngle, "bstarAngle[bstarDetected]/F");
 	   _Tree->Branch("bstarDeviation", _bstarDeviation, "bstarDeviation[bstarDetected]/F");
 	   
-	   /*_Tree->Branch("v0Detected", &_v0Detected, "v0Detected/I");
+	   _Tree->Branch("v0Detected", &_v0Detected, "v0Detected/I");
 	   _Tree->Branch("v0Momentum", _v0Momentum, "v0Momentum[v0Detected]/F");
 	   _Tree->Branch("v0Error", _v0Error, "v0Error[v0Detected]/F");
 	   _Tree->Branch("v0Angle", _v0Angle, "v0Angle[v0Detected]/F");
@@ -228,12 +239,17 @@ namespace TTbarAnalysis
 	   _Tree->Branch("fakeError", _fakeError, "fakeError[fakeDetected]/F");
 	   _Tree->Branch("fakeAngle", _fakeAngle, "fakeAngle[fakeDetected]/F");
 	   _Tree->Branch("fakeObs", _fakeObs, "fakeObs[fakeDetected]/F");
+	   _Tree->Branch("fakeZ", _fakeZ, "fakeZ[fakeDetected]/F");
 	   _Tree->Branch("fakeOffset", _fakeOffset, "fakeOffset[fakeDetected]/F");
 	   _Tree->Branch("fakeVtxHits", _fakeVtxHits, "fakeVtxHits[fakeDetected]/I");
 	   _Tree->Branch("fakeFtdHits", _fakeFtdHits, "fakeFtdHits[fakeDetected]/I");
 	   _Tree->Branch("fakeDeviation", _fakeDeviation, "fakeDeviation[fakeDetected]/F");
+	   _Tree->Branch("fakeD0Deviation", _fakeD0Deviation, "fakeD0Deviation[fakeDetected]/F");
+	   _Tree->Branch("fakeZ0Deviation", _fakeZ0Deviation, "fakeZ0Deviation[fakeDetected]/F");
+	   _Tree->Branch("fakeZ0", _fakeZ0, "fakeZ0[fakeDetected]/F");
 	   _Tree->Branch("fakePvtx", _fakeSecDeviation, "fakePvtx[fakeDetected]/F");
 	   _Tree->Branch("fakeCostheta", _fakeCostheta, "fakeCostheta[fakeDetected]/F");
+	   _Tree->Branch("fakeCosthetaVtx", _fakeCosthetaVtx, "fakeCosthetaVtx[fakeDetected]/F");
 	   
 	   _Tree->Branch("purDetected", &_purDetected, "purDetected/I");
 	   _Tree->Branch("purOffset", _purOffset, "purOffset[purDetected]/F");
@@ -392,15 +408,19 @@ namespace TTbarAnalysis
 			}
 			int vtxhits = 0;
 			int tpchits = 0;
+			int ftdhits = 0;
 			std::cout << std::fixed << std::setw( 6 ) << std::setprecision( 3 ) << std::setfill( ' ' );
 			//int id =  particle->getTracks()[0]->getSubdetectorHitNumbers()[4];
 			if (abs(particle->getCharge()) > 0.5) 
 			{
 				vtxhits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[0];
 				tpchits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[6];
+				ftdhits =  particle->getTracks()[0]->getSubdetectorHitNumbers()[5];
 			}
+			vector<float> direction = MathOperator::getDirection(particle->getMomentum());
+			float costheta = std::cos(MathOperator::getAngles(direction)[1]);
 			//float chi2 = (particle->getTracks().size() > 0)? particle->getTracks()[0]->getChi2() / (float)particle->getTracks()[0]->getNdf() : -1.0;
-			std::cout<<"|"<<vtxhits << ":" <<tpchits<<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
+			std::cout<<"|"<<vtxhits << ":" <<ftdhits<<":" <<tpchits <<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge() <<"\t\t|"<< costheta <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
 		}
 		void VertexRestorer::processEvent( LCEvent * evt ) 
 		{ 
@@ -421,6 +441,7 @@ namespace TTbarAnalysis
 				LCCollection* relation = evt->getCollection(_colRelName);
 				LCCollection* jetcol = evt->getCollection( _colJetName );
 				LCCollection* relcol = evt->getCollection( _colJetRelName );
+				LCCollection* genvertexcol = evt->getCollection( _colMCvertexName );
 				
 				RecoveryOperator recovery(primary, maincol);
 				std::cout << "HERE!";
@@ -455,6 +476,15 @@ namespace TTbarAnalysis
 					{
 						newseccol->addElement(newvertices[i]);
 						newvtxRPcol->addElement(newvertices[i]->getAssociatedParticle());
+						for (int j = 0; j < newvertices[i]->getAssociatedParticle()->getParticles().size(); j++) 
+						{
+							if (newvertices[i]->getAssociatedParticle()->getParticles()[j]->getClusters().size() > 0) 
+							{
+								continue;
+							}
+							std::cout << "HERE!!!\n" ;
+							//newvtxRPcol->addElement(newvertices[i]->getAssociatedParticle()->getParticles()[j]);
+						}
 					}
 					LCRelationNavigator navigator(newjetrelcol);
 					CopyParameters(jetcol->parameters (), newjetcol->parameters ());
@@ -482,7 +512,7 @@ namespace TTbarAnalysis
 							
 						}
 						float btag2 =  MathOperator::getRandom(btag , 1.0);//(btag + (1.0 - btag)/2.0
-						if (bmomentum > 15 && btag > 0.45 && changed) 
+						if (bmomentum > 15 && btag > 0.6 && changed) 
 						{
 							params[pidh.getParameterIndex(alid,"BTag")] = btag2;
 						}
@@ -505,6 +535,7 @@ namespace TTbarAnalysis
 					///*/
 					//vector < MyReconstructedParticle * > * result = RefineVertices(maincol, seccol, v0col);
 					vector < MyReconstructedParticle * > * result = RestoreVertices(jetcol, relcol, seccol, trashcol);
+					//vector < MyReconstructedParticle * > * result =__CheatRestoreVertices(jetcol, genvertexcol);
 					LCCollection* bstarcol = evt->getCollection( _colBStarName );
 					CompareCollectionsRel(result, evt->getCollection(_colEGPName), bstarcol , trackrelcol); // relation
 					_Tree->Fill();
@@ -635,8 +666,8 @@ namespace TTbarAnalysis
 				_primeOffset[i] = MathOperator::getDistanceTo(pos, direction, start);//opera.GetOffset(primaries[i]);
 				//_primeOffset[i] = opera.GetOffset(primaries[i]);
 				_primeMomentum[i] = MathOperator::getModule(primaries[i]->getMomentum());
-
-				_primeError[i] = std::sqrt(opera.GetOffsetError(primaries[i], opera.GetStartPoint(primaries[i]), primary, _primeOffset[i]));
+				
+				_primeError[i] = opera.GetOffsetErrorSimple(primaries[i]);
 				_primeTeorError[i] = GetError(primaries[i]);
 				_primeChi2[i] = primaries[i]->getTracks()[0]->getChi2()/(float)primaries[i]->getTracks()[0]->getNdf();
 				//_primeChi2[i] = primaries[i]->getTracks()[0]->getChi2();
@@ -645,7 +676,7 @@ namespace TTbarAnalysis
 				_primeFtdHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[5];
 				_primeEtdHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[10];
 				//std::cout << "Offset: " << _primeOffset[i] << "; error^2: " << _primeError[i] << '\n'; 
-				_primeDeviation[i] = _primeOffset[i] / _primeError[i]; 
+				_primeDeviation[i] = myTrackOperator.GetOffsetSignificance(primaries[i]); //_primeOffset[i] / _primeError[i]; 
 			        //std::cout << "Offset: " << _primeOffset[i] << " deviation: " << _primeDeviation[i] << '\n';
 				
 			}
@@ -778,7 +809,7 @@ namespace TTbarAnalysis
 				return false;
 			}
 			MCParticle * winner = NULL;
-			float maxweight = 0.50;
+			float maxweight = 0.90;
 			for (unsigned int i = 0; i < obj.size(); i++) 
 			{
 				if (weights[i] > maxweight) 
@@ -825,14 +856,19 @@ namespace TTbarAnalysis
 					//_missedError[_missedDetected] = GetError(particle);
 					_missedError[_missedDetected] = detected->at(i)->GetAccuracy();
 					_missedMomentum[_missedDetected] = MathOperator::getModule(particle->getMomentum());
-					_missedDeviation[_missedDetected] =  detected->at(i)->GetOffset() / _missedError[_missedDetected];
+					_missedDeviation[_missedDetected] =  myTrackOperator.GetOffsetSignificance(particle);// detected->at(i)->GetOffset() / _missedError[_missedDetected];
+					_missedD0Deviation[_fakeDetected] =  std::abs(particle->getTracks()[0]->getD0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[0])); //
+					_missedZ0Deviation[_fakeDetected] =  std::abs(particle->getTracks()[0]->getZ0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[9])); //
+					_missedZ0[_fakeDetected] =  particle->getTracks()[0]->getZ0(); //
 					_missedOffset[_missedDetected] =  detected->at(i)->GetOffset() ;
 					_missedAngle[_missedDetected] = detected->at(i)->GetAngle();
 					_missedObs[_missedDetected] = detected->at(i)->GetObservable();
+					_missedZ[_missedDetected] = detected->at(i)->GetZ();
 					_missedVtxHits[_missedDetected] = particle->getTracks()[0]->getSubdetectorHitNumbers()[0];
 					_missedFtdHits[_missedDetected] = particle->getTracks()[0]->getSubdetectorHitNumbers()[4];
 					_missedSecDeviation[_missedDetected] =  detected->at(i)->GetSecOffset();
 					_missedCostheta[_missedDetected] = detected->at(i)->GetCostheta();
+					_missedCosthetaVtx[_missedDetected] = detected->at(i)->GetCosthetaVtx();
 					_missedDetected++;
 				}
 				if (CompareToCollection(particle, bstar, rel, byTracks)) 
@@ -847,12 +883,17 @@ namespace TTbarAnalysis
 					_fakeError[_fakeDetected] = detected->at(i)->GetAccuracy();
 					//_fakeError[_fakeDetected] = GetError(particle);
 					_fakeMomentum[_fakeDetected] = MathOperator::getModule(particle->getMomentum());
-					_fakeDeviation[_fakeDetected] =  detected->at(i)->GetOffset() / _fakeError[_fakeDetected];
+					_fakeDeviation[_fakeDetected] =   myTrackOperator.GetOffsetSignificance(particle); //detected->at(i)->GetOffset() / _fakeError[_fakeDetected];
+					_fakeD0Deviation[_fakeDetected] =  std::abs(particle->getTracks()[0]->getD0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[0])); //
+					_fakeZ0Deviation[_fakeDetected] =  std::abs(particle->getTracks()[0]->getZ0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[9])); //
+					_fakeZ0[_fakeDetected] =  particle->getTracks()[0]->getZ0(); //
 					_fakeSecDeviation[_fakeDetected] =  detected->at(i)->GetSecOffset();
 					_fakeAngle[_fakeDetected] = detected->at(i)->GetAngle(); 
 					_fakeObs[_fakeDetected] = detected->at(i)->GetObservable(); 
+					_fakeZ[_fakeDetected] = detected->at(i)->GetZ(); 
 					_fakeOffset[_fakeDetected] = detected->at(i)->GetOffset(); 
 					_fakeCostheta[_fakeDetected] = detected->at(i)->GetCostheta(); 
+					_fakeCosthetaVtx[_fakeDetected] = detected->at(i)->GetCosthetaVtx(); 
 					_fakeVtxHits[_fakeDetected] = particle->getTracks()[0]->getSubdetectorHitNumbers()[0];
 					_fakeFtdHits[_fakeDetected] = particle->getTracks()[0]->getSubdetectorHitNumbers()[4];
 					_fakeDetected++;
@@ -1013,7 +1054,7 @@ namespace TTbarAnalysis
 			{
 				return result;
 			}
-			float mindprime = 1000;
+			/*float mindprime = 1000;
 			float maxdprime = 0;
 			double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
 			//std::cout << "Vertex position: " << MathOperator::getModule(sec->getPosition()) << " Chi2: " << sec->getChi2() << "\n";
@@ -1042,8 +1083,75 @@ namespace TTbarAnalysis
 			//std::cout << "\tdmin'= " << mindprime << "\tdmax'= " << maxdprime << "\n";
 			result.push_back(mindprime);
 			result.push_back(maxdprime);
+			return result;*/
+			float meanOffset = 0.0;
+			float sigmaOffset = 0.0;
+			float meanAngle = 0.0;
+			float sigmaAngle = 0.0;
+			float meanVtx = 0.0;
+			float sigmaVtx = 0.;
+			float meanObs = 0.0;
+			float sigmaObs = 0.0;
+			vector<float> offsets;
+			vector<float> angles;
+			vector<float> observables;
+			for (int i = 0; i < secondaries.size(); i++) 
+			{
+				ReconstructedParticle * primary = secondaries[i];
+				vector< float > direction = MathOperator::getDirection(primary->getMomentum());
+				double * trackPosition = myTrackOperator.GetStartPoint(primary);
+				double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
+				double * secondaryPosition = MathOperator::toDoubleArray(sec->getPosition(),3);
+				float primaryOffset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
+				vector<float> diff = MathOperator::getDirection(secondaryPosition, trackPosition);
+				double diif[3];
+				for (int m = 0; m < 3; m++) 
+				{
+					diif[m] = diff[m];
+				}
+				float angle = MathOperator::getAngle(diif, primary->getMomentum());
+				int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
+				//std::cout << "\t\toffset: " << primaryOffset / GetError(primary) << "\n";
+				std::cout << "\t\tangle: " << angle << "\n";
+				float momentum = MathOperator::getModule(primary->getMomentum());
+				meanVtx += vtxhits;
+				meanAngle += angle;
+				angles.push_back(angle);
+				offsets.push_back(primaryOffset / GetError(primary));
+				meanOffset += primaryOffset / GetError(primary);
+				//observables.push_back(primaryOffset / GetError(primary) / angle);
+				//meanObs += primaryOffset / GetError(primary) / angle;
+				observables.push_back(momentum);
+				meanObs += momentum;
+
+			}
+			meanObs/= secondaries.size();
+			meanVtx /= secondaries.size();
+			meanAngle /= secondaries.size();
+			meanOffset /= secondaries.size();
+			for (int i = 0; i < secondaries.size(); i++) 
+			{
+				ReconstructedParticle * primary = secondaries[i];
+				int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
+				sigmaOffset += (meanOffset - offsets[i])*(meanOffset - offsets[i]);
+				sigmaAngle  += std::pow(meanAngle - angles[i], 2);
+				sigmaVtx += std::pow(vtxhits - meanVtx, 2);
+				sigmaObs += std::pow( observables[i] - meanObs, 2);
+			}
+			sigmaOffset = std::sqrt(sigmaOffset / secondaries.size());
+			sigmaAngle = std::sqrt(sigmaAngle / secondaries.size());
+			sigmaVtx = std::sqrt(sigmaVtx / secondaries.size());
+			sigmaObs = std::sqrt(sigmaObs / secondaries.size());
+
+			result.push_back(meanOffset);
+			result.push_back(sigmaOffset);
+			result.push_back(meanAngle);
+			result.push_back(sigmaAngle);
+			result.push_back(meanVtx);
+			result.push_back(sigmaVtx);
+			result.push_back(meanObs);
+			result.push_back(sigmaObs);
 			return result;
-			
 		}
 		float VertexRestorer::GetMinDiffDistance(const ReconstructedParticle * candidate, const Vertex * sec, float & obs)
 		{
@@ -1070,92 +1178,119 @@ namespace TTbarAnalysis
 
 			return mindistance;
 		}
-		bool VertexRestorer::TakeParticle(EVENT::ReconstructedParticle * primary, const EVENT::Vertex * sec, vector<double> * parameters)
+		//bool VertexRestorer::TakeParticle(EVENT::ReconstructedParticle * primary, const EVENT::Vertex * sec, vector<double> * parameters)
+		MyReconstructedParticle * VertexRestorer::TakeParticle(ReconstructedParticle * primary, const Vertex * sec, ReconstructedParticle * jet)
 		{
-				if (std::abs(primary->getCharge() ) < 0.9) 
-				{
-					return false;
-				}
-				const vector< ReconstructedParticle * > secondaries = sec->getAssociatedParticle()->getParticles();
-				double * trackPosition = myTrackOperator.GetStartPoint(primary);
-				float trackDistance = MathOperator::getModule(trackPosition);
-				if (trackDistance > 20.0) 
-				{
-					return false;
-				}
-				//return true;
-				double observable = MathOperator::getModule(primary->getMomentum()) / MathOperator::getModule(sec->getAssociatedParticle()->getMomentum());
-				vector< float > direction = MathOperator::getDirection(primary->getMomentum());
-				double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
-				double * secondaryPosition = MathOperator::toDoubleArray(sec->getPosition(),3);
-				float primaryOffset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
-				float accuracy = GetError(primary);
-				//float accuracy = std::sqrt(myTrackOperator.GetOffsetError(primary, trackPosition, myPrimary, primaryOffset));
-				//float accuracy = std::sqrt(myTrackOperator.GetOffsetErrorSimple(primary));
-				float secondaryOffset = MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
-				vector<float> diff = MathOperator::getDirection(secondaryPosition, trackPosition);
-				double diif[3];
-				for (int m = 0; m < 3; m++) 
-				{
-					diif[m] = diff[m];
-				}
-				float angle = MathOperator::getAngle(diif, primary->getMomentum());
-				float angleError = 1.0;
-				if (angle > 0.0) 
-				{
-					angleError = std::sqrt(myTrackOperator.GetAngleError(angle, sec, primary));
-				}
-				float secOffset =  MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
-				float costheta = std::cos(MathOperator::getAngles(direction)[1]); //std::abs( std::cos(MathOperator::getAngles(secDiraction)[1] ) );
-				float dprime = myTrackOperator.GetDprime(primary, secondaries[0], primaryPosition);
-				float pvtx = MathOperator::getModule(sec->getAssociatedParticle()->getMomentum());
-				//float l =  GetMinDiffDistance(primary, sec, dprime);// std::abs( distance / secondaryOffset -0.5 ) * cos;
-				//vector< float > limits = ParametrizeVertex(sec);
-				int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
-				int sithits = primary->getTracks()[0]->getSubdetectorHitNumbers()[2];
-				int ftdhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[5];
-				float anglecut = 0.1;//limits[1]*5.0+.05;
-				//bool result = //(primaryOffset /accuracy  > 0.7 + 1.5 * angle / angleError) &&
-				bool result = (primaryOffset /accuracy  > 0.2 + 100.*angle || angle < 0.005) &&
-				//bool result = (primaryOffset /accuracy  > 0.5 + 90.*angle || angle < 0.005) && // best for dst
-				//bool result = //(primaryOffset/accuracy >0.002+ 0.015 *angle / angleError ) &&
-					//(((ftdhits > 0) && angle < anglecut/2) || (vtxhits > 1 && angle < anglecut));
-					(ftdhits > 1) &&
-					//(primaryOffset/accuracy > 15 * sqrt(angle) ||  angle < 0.005) &&
-					//(vtxhits > 1 || angle < 0.001) &&
-					//(vtxhits> 3 && sithits > -1  || angle < 0.001) && // ||( abs(costheta) < 0.9 && vtxhits+ftdhits > 5 ) || angle < 0.001)
-					angle < anglecut;// + 0.03 * sine;
-				if (result) 
-				{
-					std::cout << "Found a track with offset " << primaryOffset
-						<< ", error " << accuracy//GetError(primary) 
-						<< ", Angle " << angle //GetError(primary) 
-						<< ", DISTANCE " << dprime - MathOperator::getModule(secondaryPosition) //distance//GetError(primary) 
-						<< ", costheta " << costheta
-						<< ", vtxhits " << vtxhits
-						//<< ", ftdhits " << ftdhits
-						<<" :\n";
-					if (parameters) 
+			if (std::abs(primary->getCharge() ) < 0.9) 
+			{
+				return NULL;
+			}
+			const vector< ReconstructedParticle * > secondaries = sec->getAssociatedParticle()->getParticles();
+			double * trackPosition = myTrackOperator.GetStartPoint(primary);
+			float trackDistance = MathOperator::getModule(trackPosition);
+			if (trackDistance > 20.0) 
+			{
+				return NULL;
+			}
+			//return true;
+			//double observable = MathOperator::getModule(primary->getMomentum()) / MathOperator::getModule(sec->getAssociatedParticle()->getMomentum());
+			vector< float > direction = MathOperator::getDirection(primary->getMomentum());
+			double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
+			double * secondaryPosition = MathOperator::toDoubleArray(sec->getPosition(),3);
+			float primaryOffset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
+			//float accuracy = GetError(primary);
+			//float accuracy = std::sqrt(myTrackOperator.GetOffsetError(primary, trackPosition, myPrimary, primaryOffset));
+			float accuracy = (myTrackOperator.GetOffsetErrorSimple(primary));
+			float secondaryOffset = MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
+			vector<float> diff = MathOperator::getDirection(secondaryPosition, trackPosition);
+			vector< float > directionVtx = MathOperator::getDirection(secondaryPosition);
+			double diif[3];
+			for (int m = 0; m < 3; m++) 
+			{
+				diif[m] = diff[m];
+			}
+			float angle = MathOperator::getAngle(diif, primary->getMomentum());
+			float angleError = 1.0;
+			if (angle > 0.0) 
+			{
+				angleError = std::sqrt(myTrackOperator.GetAngleError(angle, sec, primary));
+			}
+			float secOffset =  MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
+			float costheta = std::cos(MathOperator::getAngles(direction)[1]); //std::abs( std::cos(MathOperator::getAngles(secDiraction)[1] ) );
+			float costhetaVtx = std::cos(MathOperator::getAngles(directionVtx)[1]); //std::abs( std::cos(MathOperator::getAngles(secDiraction)[1] ) );
+			//float dprime = myTrackOperator.GetDprime(primary, secondaries[0], primaryPosition);
+			float pvtx = MathOperator::getModule(sec->getAssociatedParticle()->getMomentum());
+			//float l =  GetMinDiffDistance(primary, sec, dprime);// std::abs( distance / secondaryOffset -0.5 ) * cos;
+			//vector< float > limits = ParametrizeVertex(sec);
+			int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
+			int sithits = primary->getTracks()[0]->getSubdetectorHitNumbers()[2];
+			int ftdhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[5];
+			if ( abs(costheta) > 0.9 ) 
+			{
+				accuracy = 2*GetError(primary);
+			}
+			float radius = std::abs(1. / primary->getTracks()[0]->getOmega());
+			float phi = 1.571 - primary->getTracks()[0]->getPhi();
+			float distance = MathOperator::getModule(secondaryPosition);
+			float observable = MathOperator::getAngle(primary->getMomentum(),sec->getAssociatedParticle()->getMomentum());
+			//float observable = std::atan((radius - std::sqrt(radius*radius - distance*distance)) / distance);
+			//float observable = (std::pow(secondaryPosition[0] - radius * std::cos(phi) - trackPosition[0],2) + std::pow(secondaryPosition[1] - radius * std::sin(phi) - trackPosition[1],2) - radius * radius) / (radius * radius);
+			//float chi2 = getChi2(primary, sec);
+			//vector< float > parametersVertex = ParametrizeVertex(sec);
+			if (abs(costheta) < 0.9) 
+			{
+				//return NULL;
+			}
+			int ntracks = sec->getAssociatedParticle()->getParticles().size();
+			float z = MathOperator::getModule(primary->getMomentum()) / MathOperator::getModule(jet->getMomentum());
+			float anglecut = 0.1;//(abs(costheta) > 0.9)? 0.05: 0.1;
+			float deviation = myTrackOperator.GetOffsetSignificance(primary);
+			//float deviation = primaryOffset /accuracy;
+			//bool result = //(primaryOffset /accuracy  > 2.5 *std::atan(angle * 100) || angle < 0.005)   &&
+				//!(angle > 0.04 && z < 0.06) &&
+			//bool result = primaryOffset /accuracy  > 20.0 * sqrt( angle )   &&
+			bool result = //(deviation  > 2.0 + 50.*angle || angle < 0.005) &&
+			//bool result = (primaryOffset /accuracy  > 0.5 + 90.*angle || angle < 0.005) && // best for dst
+			//bool result = //(primaryOffset/accuracy >0.002+ 0.015 *angle / angleError ) &&
+			//(((ftdhits > 0) && angle < anglecut/2) || (vtxhits > 1 && angle < anglecut));
+			//(ftdhits + vtxhits > 1) &&
+			//bool result = //(primaryOffset/accuracy >0.2+ 15 * sqrt(angle - 0.001 * (ntracks - 2)) ||  angle < 0.005) &&
+				//(vtxhits > 2 || angle < 0.001) &&
+				//(vtxhits> 3 && sithits > -1  || angle < 0.001) && // ||( abs(costheta) < 0.9 && vtxhits+ftdhits > 5 ) || angle < 0.001)
+				angle < anglecut;// + 0.03 * sine;
+			
+			if (result) 
+			{
+				std::cout << "Found a track with offset " << primaryOffset
+					<< ", error " << accuracy//GetError(primary) 
+					<< ", Angle " << angle //GetError(primary) 
+					<< ", ntracks " << ntracks //distance//GetError(primary) 
+					<< ", costheta " << costheta
+					<< ", vtxhits " << vtxhits
+					<< ", radius " << radius
+					//<< ", ftdhits " << ftdhits
+					<<" :\n";
+					MyReconstructedParticle * newparticle = new MyReconstructedParticle(primary);
+					newparticle->SetAngle(angle);
+					newparticle->SetObservable(observable);
+					newparticle->SetAccuracy(accuracy);
+					newparticle->SetOffset(primaryOffset);
+					newparticle->SetSecOffset(secOffset);
+					newparticle->SetCostheta(costheta);
+					newparticle->SetCosthetaVtx(costhetaVtx);
+					if (jet) 
 					{
-						parameters->push_back(angle);//dprime - MathOperator::getModule(secondaryPosition));
-						parameters->push_back(accuracy);
-						parameters->push_back(primaryOffset);
-						parameters->push_back(pvtx);
-						parameters->push_back(costheta);
-						parameters->push_back(angleError);
+						newparticle->SetZ(z);
 					}
-				}
-				else 
-				{
-					if (parameters) 
-					{
-						delete parameters;
-					}
-				}
-				return result;
+					return newparticle;
+			}
+			else 
+			{
+				return NULL;
+			}
 		}
 
-		vector< MyReconstructedParticle * > VertexRestorer::AddParticles(const std::vector< EVENT::ReconstructedParticle * > & pri, EVENT::Vertex * sec, const std::vector< EVENT::ReconstructedParticle * > * toCompare)
+		vector< MyReconstructedParticle * > VertexRestorer::AddParticles(const vector< ReconstructedParticle * > & pri, Vertex * sec, const vector< ReconstructedParticle * > * toCompare, ReconstructedParticle * jet)
 		{
 			vector< MyReconstructedParticle * > result;
 			if (sec->getAssociatedParticle()->getParticles().size() < 2) 
@@ -1167,10 +1302,11 @@ namespace TTbarAnalysis
 			{
 				vector<double> * parameters = new vector<double> ();
 				ReconstructedParticle * primary = pri[i];
-				if (TakeParticle(primary, sec, parameters)) 
+				MyReconstructedParticle * newparticle = TakeParticle(primary, sec, jet);
+				if (newparticle) 
 				{
 					PrintParticle(primary);
-					bool found = false;
+					/*bool found = false;
 					for (unsigned int j = 0; j < particles->size(); j++) 
 					{
 						ReconstructedParticle * secondary = particles->at(j);
@@ -1179,19 +1315,12 @@ namespace TTbarAnalysis
 							found = true;
 							break;
 						}
-					}
-					
+					}*/
+					//if (!found) 
 					if (!IsDublicate(primary, *particles))
 					{
 						std::cout << "The particle is unique!\n";
 						//float errorvtx = (sec->getChi2() < 0.00001)? 0.00001: sec->getChi2();
-						MyReconstructedParticle * newparticle = new MyReconstructedParticle(primary);
-						newparticle->SetAngle(parameters->at(0));
-						newparticle->SetObservable(parameters->at(5));
-						newparticle->SetAccuracy(parameters->at(1));
-						newparticle->SetOffset(parameters->at(2));
-						newparticle->SetSecOffset(parameters->at(3));
-						newparticle->SetCostheta(parameters->at(4));
 						result.push_back(newparticle);
 					}
 				}
@@ -1271,7 +1400,7 @@ namespace TTbarAnalysis
 				_missedRecoTheta[i] = MathOperator::getAngles(direction)[1];
 			}
 		}
-		bool VertexRestorer::CompareParticles(const ReconstructedParticle * particle1, const ReconstructedParticle * particle2, bool verbose)
+		bool VertexRestorer::CompareParticles(const ReconstructedParticle * particle1, const ReconstructedParticle * particle2, bool module)
 		{
 			if (particle1 == particle2) 
 			{
@@ -1291,6 +1420,15 @@ namespace TTbarAnalysis
 			float recomodule = MathOperator::getModule(particle2->getMomentum());
 			float mcmodule = MathOperator::getModule(particle1->getMomentum());
 			float ratio = (1 - recomodule/mcmodule > 0.0) ? 1 - recomodule/mcmodule : recomodule/mcmodule - 1.0;
+			if (abs(particle2->getCharge()) > 0.9 && abs(particle1->getCharge())  > 0.9) 
+			{
+				int vtxhits2 =  particle2->getTracks()[0]->getSubdetectorHitNumbers()[0];
+				int vtxhits1 =  particle1->getTracks()[0]->getSubdetectorHitNumbers()[0];
+				if ((vtxhits1 && !vtxhits2) || (vtxhits2 && !vtxhits1)) 
+				{
+					return angle < 0.01;
+				}
+			}
 			if (ratio > 0.1) 
 			{
 				return false;
@@ -1317,7 +1455,7 @@ namespace TTbarAnalysis
 			}
 			return true;
 		}
-		vector < EVENT::ReconstructedParticle * > * VertexRestorer::RestoreVertices(Vertex * primary, LCCollection * sec)
+		/*vector < EVENT::ReconstructedParticle * > * VertexRestorer::RestoreVertices(Vertex * primary, LCCollection * sec)
 		{
 			//vector < EVENT::Vertex * > * result = new vector< EVENT::Vertex* >();
 			vector < ReconstructedParticle * > * result = new vector< ReconstructedParticle * >();
@@ -1345,7 +1483,7 @@ namespace TTbarAnalysis
 				}
 			}
 			return result;
-		}
+		}*/
 		vector< ReconstructedParticle * > * VertexRestorer::RestoreOneTrackVertices(LCCollection * jetcol, LCCollection * rel, LCCollection * sec)
 		{
 			vector < ReconstructedParticle * > * result = new vector< ReconstructedParticle * >();
@@ -1386,50 +1524,6 @@ namespace TTbarAnalysis
 			}
 			return result;
 		}
-		vector< ReconstructedParticle * > VertexRestorer::GetAdditionalParticles(const vector< ReconstructedParticle * > & pri, const vector< ReconstructedParticle * > * particles )
-		{
-			vector< ReconstructedParticle * > result;
-			for (unsigned int i = 0; i < pri.size(); i++) 
-			{
-				ReconstructedParticle * primaryTrack = pri[i];
-				if (abs(primaryTrack->getCharge())  < 0.9) 
-				{
-					continue;
-				}
-				vector< float > direction = MathOperator::getDirection(primaryTrack->getMomentum());
-				double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
-				double * trackPosition = myTrackOperator.GetStartPoint(primaryTrack);
-				float primaryOffset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
-				float accuracy = std::sqrt(myTrackOperator.GetOffsetError(primaryTrack, trackPosition, myPrimary, primaryOffset));
-				if (primaryOffset / accuracy > 5.0
-				    && primaryOffset < 3.0)
-				{
-					std::cout << "Found a track with offset " << primaryOffset
-						<< ", deviation " << primaryOffset / accuracy 
-						<< ", distance " << MathOperator::getModule(trackPosition)
-						<< ", error*e-4 " << accuracy
-						<<" :\n";
-					PrintParticle(primaryTrack);
-					bool found = false;
-					for (unsigned int j = 0; j < particles->size(); j++) 
-					{
-						ReconstructedParticle * secondary = particles->at(j);
-						if (CompareParticles(secondary, primaryTrack)) 
-						{
-							found = true;
-							break;
-						}
-					}
-					if (!found) 
-					{
-						std::cout << "The particle is unique!\n";
-						result.push_back(primaryTrack);
-					}
-				}
-			}
-			return result;	    //&& primaryOffset / accuracy < 3.0
-			
-		}
 		vector < MyReconstructedParticle * > * VertexRestorer::RestoreVertices(LCCollection * jetcol, LCCollection * rel, LCCollection * secvtx,  LCCollection * trash)
 		{
 			vector < MyReconstructedParticle * > * result = new vector< MyReconstructedParticle * >();
@@ -1452,13 +1546,21 @@ namespace TTbarAnalysis
 			{
 				//std::cout << "Resurrected particles: \n";
 				int tracknumber = trash->getNumberOfElements();
+				vector< ReconstructedParticle * > jetparticles;
+				for (int i = 0; i < number; i++) 
+				{
+					ReconstructedParticle * jet = dynamic_cast<ReconstructedParticle *>(jetcol->getElementAt(i));
+					jetparticles.reserve(jet->getParticles().size() + jetparticles.size());
+					jetparticles.insert(jetparticles.end(), jet->getParticles().begin(), jet->getParticles().end());
+
+				}
 				for (int i = 0; i < tracknumber; i++) 
 				{
 					Track * track = dynamic_cast<Track *>(trash->getElementAt(i));
 					ReconstructedParticle * particle = myTrackOperator.ReconstructParticle(track);
-					if (!IsDublicate(particle, *particles)) 
+					if (!IsDublicate(particle, *particles) && !IsDublicate(particle, jetparticles)) 
 					{
-					//PrintParticle(particle);
+						//PrintParticle(particle);
 						resurrected.push_back(particle);
 					}
 				}
@@ -1468,7 +1570,7 @@ namespace TTbarAnalysis
 					{
 						if (j != i && CompareParticles(resurrected[i],resurrected[j])) 
 						{
-							 //std::cout <<"Found same zombies i: "<< i << " j: " << j <<"!\n";
+							 std::cout <<"Found same zombies i: "<< i << " j: " << j <<"!\n";
 							 //PrintParticle(resurrected[i]);
 							 //PrintParticle(resurrected[j]);
 						}
@@ -1504,15 +1606,41 @@ namespace TTbarAnalysis
 					vector< ReconstructedParticle * > toInject;
 					toInject.reserve(jet->getParticles().size() + resurrected.size());
 					toInject.insert(toInject.end(), jet->getParticles().begin(), jet->getParticles().end());
-					//toInject.insert(toInject.end(), resurrected.begin(), resurrected.end());
+					toInject.insert(toInject.end(), resurrected.begin(), resurrected.end());
 
-					vector< MyReconstructedParticle * > additional = AddParticles(toInject, vertex, particles);
+					vector< MyReconstructedParticle * > additional = AddParticles(toInject, vertex, particles, jet);
 					for (unsigned int j = 0; j < additional.size(); j++) 
 					{
 						if (!IsDublicate(additional[j], *result)) 
 						{
 							result->push_back(additional[j]);
 						}
+					}
+				}
+			}
+			return result;
+		}
+	  	vector< MyReconstructedParticle * > * VertexRestorer::__CheatRestoreVertices(LCCollection * jetcol, LCCollection * genvertexcol, LCCollection * trashcol)
+		{
+			vector < MyReconstructedParticle * > * result = new vector< MyReconstructedParticle * >();
+			int jetnumber = jetcol->getNumberOfElements();
+			int vtxnumber = genvertexcol->getNumberOfElements();
+			vector< ReconstructedParticle * > toInject;
+			for (int i = 0; i < jetnumber; i++) 
+			{
+				ReconstructedParticle * jet = dynamic_cast<ReconstructedParticle *>(jetcol->getElementAt(i));
+				toInject.reserve(jet->getParticles().size()+toInject.size());
+				toInject.insert(toInject.end(), jet->getParticles().begin(), jet->getParticles().end());
+			}
+			for (int i = 0; i < vtxnumber; i++) 
+			{
+				Vertex * vertex = dynamic_cast<Vertex * > (genvertexcol->getElementAt(i));
+				vector< MyReconstructedParticle * > additional = AddParticles(toInject, vertex);
+				for (unsigned int j = 0; j < additional.size(); j++) 
+				{
+					if (!IsDublicate(additional[j], *result)) 
+					{
+						result->push_back(additional[j]);
 					}
 				}
 			}
@@ -1801,6 +1929,60 @@ namespace TTbarAnalysis
 		void VertexRestorer::check( LCEvent * evt ) {}
 
 
+	  	float VertexRestorer::getChi2(EVENT::ReconstructedParticle * primary, const EVENT::Vertex * sec)
+		{
+			double * trackPosition = myTrackOperator.GetStartPoint(primary);
+			vector< float > direction = MathOperator::getDirection(primary->getMomentum());
+			double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
+			double * secondaryPosition = MathOperator::toDoubleArray(sec->getPosition(),3);
+			float primaryOffset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
+			float accuracy = GetError(primary);
+			//float accuracy = std::sqrt(myTrackOperator.GetOffsetError(primary, trackPosition, myPrimary, primaryOffset));
+			//float accuracy = std::sqrt(myTrackOperator.GetOffsetErrorSimple(primary));
+			//float secondaryOffset = MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
+			vector<float> diff = MathOperator::getDirection(secondaryPosition, trackPosition);
+			double diif[3];
+			for (int m = 0; m < 3; m++) 
+			{
+				diif[m] = diff[m];
+			}
+			float momentum = MathOperator::getModule(primary->getMomentum());
+			float angle = MathOperator::getAngle(diif, primary->getMomentum());
+			//float angleError = 1.0;
+			//if (angle > 0.0) 
+			//{
+			//	angleError = std::sqrt(myTrackOperator.GetAngleError(angle, sec, primary));
+			//}
+			int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
+			int sithits = primary->getTracks()[0]->getSubdetectorHitNumbers()[2];
+			int ftdhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[5];
+			int ntracks = sec->getAssociatedParticle()->getParticles().size();
+			vector< float > parametersVertex = ParametrizeVertex(sec);
+			float angleSigma = 0.02;
+			float meanOffset = parametersVertex[0];
+			float sigmaOffset = parametersVertex[1] / (ntracks);
+
+			float meanAngle = parametersVertex[2];
+			float sigmaAngle = (parametersVertex[3] < 0.005)? 0.005 :parametersVertex[3];
+
+			float meanVtx = parametersVertex[4];
+			float sigmaVtx = (parametersVertex[5] < 0.00001)? 1. / ntracks:parametersVertex[5];
+			
+			float meanObs = parametersVertex[6];
+			float sigmaObs = (parametersVertex[7] < 0.00001)? 1. / ntracks : parametersVertex[7];
+			std::cout << "\tmean offset: " << meanOffset << " sigma: "  << sigmaOffset << "\n";
+			std::cout << "\tmean angle: " << meanAngle << " sigma: "  << sigmaAngle << "\n";
+			std::cout << "\tmean nvtxhits: " << meanVtx << " sigma: "  << sigmaVtx << "\n";
+			std::cout << "\tmean obs: " << meanObs << " sigma: "  << sigmaObs << "\n";
+			
+			//return 0.0;
+			float chi2 = std::pow(primaryOffset / accuracy - meanOffset, 2) /std::pow( sigmaOffset, 2) +
+				std::pow(angle - meanAngle, 2) /std::pow( sigmaAngle, 2) +
+				std::pow(vtxhits - meanVtx, 2) /std::pow( sigmaVtx, 2 ); 
+				std::pow(momentum - meanObs, 2) /std::pow( sigmaObs, 2);
+
+			return chi2;
+		}
 
 		void VertexRestorer::end()
 		{   

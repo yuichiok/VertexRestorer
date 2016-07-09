@@ -26,7 +26,7 @@ namespace TTbarAnalysis
 		momentum[0] = pt * std::cos(phi);
 		momentum[1] = pt * std::sin(phi);
 		momentum[2] = pt * tanl;
-		float mass = 0.140;
+		float mass = 0.139;
 		float p = pt * sqrt( 1 + tanl * tanl );
 
 		float charge = Bz / omega / std::abs(Bz / omega);
@@ -85,9 +85,20 @@ namespace TTbarAnalysis
 		float phi0 = track->getPhi();
 		start[0] =  - d0 * std::sin(phi0);
 		start[1] =  d0 * std::cos(phi0);
-		start[2] = z0;
+		start[2] = z0; //* sin * sin;
 		return start;
 
+	}
+	float TrackOperator::GetOffsetSignificance(EVENT::ReconstructedParticle * particle)
+	{
+		Track * track = particle->getTracks()[0];
+		const vector<float> covMatrix = track->getCovMatrix();
+		float d0 = track->getD0();
+		float z0 = track->getZ0();
+		float sigmad0 = covMatrix[0];
+		float sigmaz0d0 = covMatrix[6];
+		float sigmaz0 = covMatrix[9];
+		return std::abs(d0/std::sqrt(sigmad0)) + std::abs(z0/std::sqrt(sigmaz0));
 	}
 	float TrackOperator::GetDprime(const EVENT::ReconstructedParticle * particle1, const EVENT::ReconstructedParticle * particle2, double * primaryPosition)
 	{
@@ -185,7 +196,12 @@ namespace TTbarAnalysis
 	{
 		Track * track = particle->getTracks()[0];
 		const vector<float> covMatrix = track->getCovMatrix();
-		return  covMatrix[0] +  covMatrix[9];
+		float d0 = particle->getTracks()[0]->getD0();
+		float z0 = particle->getTracks()[0]->getZ0();
+		float offset = std::sqrt(d0*d0 + z0*z0);
+		float error = std::sqrt( d0*d0/offset/offset * covMatrix[0] + z0*z0/offset/offset * covMatrix[9] + 2*d0*z0/offset/offset * covMatrix[6] );
+		return error;
+		//return  covMatrix[0] +  covMatrix[9];
 	}
 
 	float TrackOperator::GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ipVertex, double offset)

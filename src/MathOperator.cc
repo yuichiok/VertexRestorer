@@ -123,7 +123,7 @@ namespace TTbarAnalysis
 	}
 	float MathOperator::getAngle(const double * vector1, const double * vector2)
 	{
-		float module1 = getModule(vector1);
+		/*float module1 = getModule(vector1);
 		float module2 = getModule(vector2);
 		if (module1 < 0.00000000001 || module2 < 0.000000000001) 
 		{	
@@ -139,7 +139,27 @@ namespace TTbarAnalysis
 			//std::cout << "DANGER!!!!\n";
 			return 0.0;
 		}
-		return acos((float)product/module1/module2);
+		return acos((float)product/module1/module2);*/
+		
+		vector< float > direction1 = getDirection(vector1);
+		vector< float > direction2 = getDirection(vector2);
+		float product = 0.0;
+		for (int i = 0; i < 3; i++) 
+		{
+			product += direction1[i]*direction2[i];
+		}
+		//float result = acos(product);
+		float result = acos(product);
+		if (isnan(result)) 
+		{
+			if (product > 1.0) 
+			{
+				return 0.0;
+			}
+			//std::cout << "DNGER: " << product << "\n";
+		}
+		return result;
+
 	}
 	float MathOperator::getAngle(const float * vector1, const float * vector2)
 	{

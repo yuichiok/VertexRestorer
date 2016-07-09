@@ -32,6 +32,7 @@ namespace TTbarAnalysis
 			TrackOperator ();
 			virtual ~TrackOperator () {};
 			float GetOffset(EVENT::ReconstructedParticle * particle);
+			float GetOffsetSignificance(EVENT::ReconstructedParticle * particle);
 			float GetAngleError(float angle, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
 			void PrintTrack(EVENT::Track * track);
 			EVENT::ReconstructedParticle * ReconstructParticle(EVENT::Track *  track);

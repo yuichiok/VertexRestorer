@@ -1,11 +1,12 @@
 #include <iostream>
 #include <vector>
 #include <EVENT/ReconstructedParticle.h>
+#include <IMPL/ReconstructedParticleImpl.h>
 #ifndef MyReconstructedParticle_hh
 #define MyReconstructedParticle_hh 1
 namespace TTbarAnalysis
 {
-	class MyReconstructedParticle 
+	class MyReconstructedParticle : public IMPL::ReconstructedParticleImpl
 	{
 		public:
 		//
@@ -27,6 +28,8 @@ namespace TTbarAnalysis
 			void SetAccuracy(float value);
 			void SetObservable(float value);
 			void SetCostheta(float value);
+			void SetCosthetaVtx(float value);
+			void SetZ(float value);
 
 			float GetAngle();
 			float GetOffset();
@@ -34,6 +37,8 @@ namespace TTbarAnalysis
 			float GetAccuracy();
 			float GetObservable();
 			float GetCostheta();
+			float GetCosthetaVtx();
+			float GetZ();
 			//void SetAngle(float angle);
 		private:
 		//
@@ -45,7 +50,9 @@ namespace TTbarAnalysis
 			float mySecOffset;
 			float myAccuracy;
 			float myObservable;
+			float myCosVtx;
 			float myCos;
+			float myZ;
 		//
 		//	Private methods
 		//
