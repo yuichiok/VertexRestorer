@@ -87,6 +87,11 @@ namespace TTbarAnalysis
 			{
 				result.push_back(particle);
 			}
+			else 
+			{
+				//std::cout << "Disposing created particle!\n";
+				delete particle;
+			}
 		}
 		std::cout << "\n";
 		return result;
@@ -101,6 +106,7 @@ namespace TTbarAnalysis
 		vector< ReconstructedParticle * > zombies = getTrackParticles(damagedcol, particles); // CHANGED
 		vector< ReconstructedParticle * > pfo = getPFOParticles();
 		vector< ReconstructedParticle * > taken;
+		vector< ReconstructedParticle * > toDispose;
 		for (int i = 0; i < jnumber; i++) 
 		{
 			ReconstructedParticle * jet = dynamic_cast<ReconstructedParticle *>(jetcol->getElementAt(i));
@@ -119,12 +125,10 @@ namespace TTbarAnalysis
 					<< " algo: " << vertex->getAlgorithmType()
 					<< "\n";
 				vector< ReconstructedParticle * > toInject;
-				//toInject.reserve(jet->getParticles().size() + zombies.size());
 				toInject.reserve(jet->getParticles().size()+ zombies.size());
 				
 				toInject.insert(toInject.end(), jet->getParticles().begin(), jet->getParticles().end());
 				toInject.insert(toInject.end(), zombies.begin(), zombies.end());
-				//toInject.insert(toInject.end(), pfo.begin(), pfo.end());
 
 				vector< ReconstructedParticle * > additional = AddParticles(toInject, vertex, particles, tagged);
 				vector< ReconstructedParticle * > filtered;
@@ -159,6 +163,15 @@ namespace TTbarAnalysis
 				{
 					newjetrelcol->addElement(CreateNewRelation(newvtx[j], jet));
 				}
+			}
+		}
+		for (unsigned int k = 0; k < zombies.size(); k++) 
+		{
+			if (!IsDublicate(zombies[k], taken)) 
+			{
+				//std::cout << "Disposing created particle!\n";
+				ReconstructedParticle * zombie = zombies[k];
+				delete zombie;
 			}
 		}
 		return result;
@@ -301,13 +314,16 @@ namespace TTbarAnalysis
 			 angle < anglecut;// + 0.03 * sine;
 		if (result) 
 		{
-			std::cout << "Found a track with offset " << primaryOffset
+			/*std::cout << "Found a track with offset " << primaryOffset
 				<< ", error " << accuracy//GetError(primary) 
 				<< ", Angle " << angle //GetError(primary) 
 				//<< ", DISTANCE " << dprime - MathOperator::getModule(secondaryPosition) //distance//GetError(primary) 
 				<< ", position " << trackDistance
 				<<" :\n";//*/
 		}
+		delete primaryPosition;
+		delete secondaryPosition;
+		delete trackPosition;
 		return result;
 	}
 	Vertex * RecoveryOperator::CreateRecoveredVertex(vector< ReconstructedParticle * > & newtracks, Vertex * oldvertex, bool add)
@@ -500,7 +516,7 @@ namespace TTbarAnalysis
 				minangle = angle;
 			}
 		}
-		std::cout << "Chosen angle: " << chosenangle << " minangle: " << minangle << "\n";
+		//std::cout << "Chosen angle: " << chosenangle << " minangle: " << minangle << "\n";
 		return chosenangle < minangle;
 	}
 	int RecoveryOperator::GetStatistics()

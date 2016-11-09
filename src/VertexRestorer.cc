@@ -368,7 +368,7 @@ namespace TTbarAnalysis
 				//std::cout << "Int key "<< intkeys[i] << " has " << intvals.size() << " values\n";
 				to.setValues(intkeys[i], intvals);
 			}
-			std::cout << "Float keys size: " << floatkeys.size() << "\n";
+			//std::cout << "Float keys size: " << floatkeys.size() << "\n";
 			for (unsigned int i = 0; i < floatkeys.size(); i++) 
 			{
 				vector<float> floatvals;
@@ -385,7 +385,7 @@ namespace TTbarAnalysis
 			{
 				vector<string> stringvals;
 				from.getStringVals(stringkeys[i], stringvals);
-				std::cout << "String key "<< stringkeys[i] << " has " << stringvals.size() << " values\n";
+				//std::cout << "String key "<< stringkeys[i] << " has " << stringvals.size() << " values\n";
 				//	std::cout << "\t" << from.getStringVal(stringkeys[0]) <<"\n";
 				to.setValues(stringkeys[i], stringvals);
 			}
@@ -444,7 +444,7 @@ namespace TTbarAnalysis
 				LCCollection* genvertexcol = evt->getCollection( _colMCvertexName );
 				
 				RecoveryOperator recovery(primary, maincol);
-				std::cout << "HERE!";
+				//std::cout << "HERE!";
 				LCCollection* trashcol = (_useTracks)? evt->getCollection( _colTrashCanName ) : NULL;
 				/*vector< Vertex * > newvertices = recovery.RecoverBuildVertices(seccol,trashcol);
 				IMPL::LCCollectionVec * newseccol = new IMPL::LCCollectionVec ( EVENT::LCIO::VERTEX ) ;
@@ -482,24 +482,38 @@ namespace TTbarAnalysis
 							{
 								continue;
 							}
-							std::cout << "HERE!!!\n" ;
+							//std::cout << "HERE!!!\n" ;
 							//newvtxRPcol->addElement(newvertices[i]->getAssociatedParticle()->getParticles()[j]);
 						}
 					}
 					LCRelationNavigator navigator(newjetrelcol);
 					CopyParameters(jetcol->parameters (), newjetcol->parameters ());
 					PIDHandler pidh(newjetcol);
-					int alid = pidh.getAlgorithmID("lcfiplus");
-					int newalid = pidh.addAlgorithm("vtxrec", pidh.getParameterNames (alid));
+					int alid = -1;
+					try
+					{
+						alid = pidh.getAlgorithmID("lcfiplus");
+					}
+					catch(UTIL::UnknownAlgorithm &e)
+					{
+						std::cout << "No algorithm lcfiplus!\n";
+						std::cout << "Jet number: " << jetcol->getNumberOfElements() << "\n";
+						alid = -1;
+					}
+					int newalid = (alid < 0)? 0 : pidh.addAlgorithm("vtxrec", pidh.getParameterNames (alid));
 					for (int i = 0; i < jetcol->getNumberOfElements(); i++) 
 					{
 						newjetcol->addElement(jetcol->getElementAt(i));
 						ReconstructedParticle * jetpart = dynamic_cast< ReconstructedParticle * >(newjetcol->getElementAt(i));
 						vector< Vertex * > * vertices = convert(navigator.getRelatedToObjects(jetpart));
 						vector<float> params;
-						const ParticleID& pid = ( pidh.getParticleID(jetpart,alid));
-						params = pid.getParameters();
-						float btag = params[pidh.getParameterIndex(alid,"BTag")];
+						float btag = 0.;
+						if (alid > -1) 
+						{
+							const ParticleID& pid =  pidh.getParticleID(jetpart,alid);
+							params = pid.getParameters();
+							btag = params[pidh.getParameterIndex(alid,"BTag")];
+						}
 						bool changed = false;
 						float bmomentum = 0.0;
 						for (int j = 0; j < vertices->size(); j++) 
@@ -1490,7 +1504,17 @@ namespace TTbarAnalysis
 			int number = jetcol->getNumberOfElements();
 			LCRelationNavigator navigator(rel);
 			PIDHandler pidh(jetcol);
-			int alid = pidh.getAlgorithmID("lcfiplus");
+			
+			int alid = -1;
+			try
+			{
+				alid = pidh.getAlgorithmID("lcfiplus");
+			}
+			catch(UTIL::UnknownAlgorithm &e)
+			{
+				std::cout << "No algorithm lcfiplus!\n";
+				alid = 0;
+			}
 			vector< ReconstructedParticle * > * particles = new vector< ReconstructedParticle * >();
 			for (int i = 0; i < sec->getNumberOfElements(); i++) 
 			{
