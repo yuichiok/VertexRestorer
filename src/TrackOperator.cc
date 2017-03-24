@@ -36,6 +36,7 @@ namespace TTbarAnalysis
 		result->addTrack(track);
 		result->setMass(mass);
 		result->setEnergy(sqrt(p*p + mass*mass));
+		delete momentum;
 		return result;
 	}
 	float TrackOperator::GetOffset(ReconstructedParticle * particle)
@@ -82,10 +83,12 @@ namespace TTbarAnalysis
 		Track * track = particle->getTracks()[0];
 		float d0 = track->getD0();
 		float z0 = track->getZ0();
+		vector< float > secDir = MathOperator::getDirection(particle->getMomentum());
+		float sin = std::sin(MathOperator::getAngles(secDir)[1]);
 		float phi0 = track->getPhi();
 		start[0] =  - d0 * std::sin(phi0);
 		start[1] =  d0 * std::cos(phi0);
-		start[2] = z0; //* sin * sin;
+		start[2] = z0;
 		return start;
 
 	}
@@ -178,6 +181,8 @@ namespace TTbarAnalysis
 
 			}
 		}
+		delete trackPosition;
+		delete vectorq;
 		//std::cout << "Angle uncertainty = " << std::sqrt(angleError)  << "\n";
 		return angleError;
 	}

@@ -56,7 +56,7 @@ namespace TTbarAnalysis
 		//
 		//	Methods
 		//
-		
+			float getHadronMomentum(std::vector< EVENT::LCObject * > & objs);	
 		private:
 		//
 		//	Data

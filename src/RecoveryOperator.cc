@@ -114,6 +114,8 @@ namespace TTbarAnalysis
 			std::cout << "Jet energy: " << jet->getEnergy() << "\n";
 			vector< LCObject * > objs = navigator.getRelatedToObjects(jet);
 			vector< Vertex * > oldvtx;
+			float pHadron = getHadronMomentum(objs);
+			float pcut = 80;
 			for (int j = 0; j < nvtx; j++) 
 			{
 				Vertex * vertex = dynamic_cast< Vertex * >(objs[j]);
@@ -123,14 +125,21 @@ namespace TTbarAnalysis
 					<< " chi2: " << vertex->getChi2()
 					<< " prob: " << vertex->getProbability()
 					<< " algo: " << vertex->getAlgorithmType()
+					<< " |p|: " << pHadron
 					<< "\n";
 				vector< ReconstructedParticle * > toInject;
-				toInject.reserve(jet->getParticles().size()+ zombies.size());
+				//toInject.reserve(jet->getParticles().size()+ zombies.size());
+				toInject.reserve(pfo.size()+ zombies.size());
 				
-				toInject.insert(toInject.end(), jet->getParticles().begin(), jet->getParticles().end());
+				//toInject.insert(toInject.end(), jet->getParticles().begin(), jet->getParticles().end());
+				toInject.insert(toInject.end(), pfo.begin(), pfo.end());
 				toInject.insert(toInject.end(), zombies.begin(), zombies.end());
 
-				vector< ReconstructedParticle * > additional = AddParticles(toInject, vertex, particles, tagged);
+				vector< ReconstructedParticle * > additional;
+				if (pHadron < pcut) 
+				{
+					additional= AddParticles(toInject, vertex, particles, tagged);
+				}
 				vector< ReconstructedParticle * > filtered;
 				for (unsigned int k = 0; k < additional.size(); k++) 
 				{
@@ -157,7 +166,7 @@ namespace TTbarAnalysis
 			}
 			vector< Vertex * > newvtx = oldvtx;//RefineJetVertices(oldvtx);
 			for (int j = 0; j < newvtx.size(); j++) 
-			{
+			{ 
 				result.push_back(newvtx[j]);	
 				if (newjetrelcol) 
 				{
@@ -232,8 +241,8 @@ namespace TTbarAnalysis
 		for (unsigned int i = 0; i < pri.size(); i++) 
 		{
 			ReconstructedParticle * candidate = pri[i];
-			if (TakeParticle(candidate, sec) && IsMinimalAngle(candidate, sec, allVtx) && !IsDublicate(candidate, *particles)) 
-			//if (TakeParticle(candidate, sec) && !IsDublicate(candidate, *particles)) 
+			//if (TakeParticle(candidate, sec) && IsMinimalAngle(candidate, sec, allVtx) && !IsDublicate(candidate, *particles)) 
+			if (TakeParticle(candidate, sec) && !IsDublicate(candidate, *particles)) 
 			//if (TakeParticle(candidate, sec)) 
 			{
 				if (!IsDublicate(candidate, result)) 
@@ -268,9 +277,15 @@ namespace TTbarAnalysis
 		//float secondaryOffset = MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
 		vector<float> diff = MathOperator::getDirection(secondaryPosition, trackPosition);
 		double diif[3];
+		double aright[3];
+		float observable =0; //MathOperator::getModule(*MathOperator::vectorProduct(directionVtx, direction));//MathOperator::getAngle(primary->getMomentum(), secondaryPosition);
+		float cosbeta = std::cos(MathOperator::getAngle(trackPosition, primary->getMomentum()));
+		vector< float > directionVtx = MathOperator::getDirection(secondaryPosition);
 		for (int m = 0; m < 3; m++) 
 		{
 			diif[m] = diff[m];
+			aright[m] = cosbeta * MathOperator::getModule(trackPosition) * direction[m] - trackPosition[m];
+			observable += aright[m] * directionVtx[m];
 		}
 		float angle = MathOperator::getAngle(diif, primary->getMomentum());
 		//float secOffset =  MathOperator::getDistanceTo(secondaryPosition, direction, trackPosition);
@@ -301,7 +316,9 @@ namespace TTbarAnalysis
 		//bool result = (primaryOffset /accuracy  > 110.0 * angle + 0.2  || angle < 0.005) &&
 		//bool result = (primaryOffset /accuracy  > 80.0 * angle + 0.5 || angle < 0.005) && // BEST
 		//bool result = (primaryOffset /accuracy  > 50.0 * angle + 2. || angle < 0.005) && // BETTER
-		bool result = ( deviation > 50.0 * angle + 2. || angle < 0.005) &&
+		//bool result = ( deviation > 50.0 * angle + 2. || angle < 0.005) &&
+		bool result = ( deviation > 25*sqrt(angle)+1.0 || angle < 0.001) &&
+				observable < 0.01 &&
 		//bool result = (primaryOffset /accuracy  > 15.0 * sqrt( angle )  || angle < 0.001) &&
 		//bool result = (primaryOffset /accuracy  > 2.2 *std::atan(angle * 100) || angle < 0.005)   &&
 		//bool result = (primaryOffset /accuracy  > 17.0 * sqrt( angle )+0.4  || angle < 0.001) &&
@@ -515,7 +532,10 @@ namespace TTbarAnalysis
 			{
 				minangle = angle;
 			}
+			delete vtxPos;
 		}
+		delete canPos;
+		delete chosenPos;
 		//std::cout << "Chosen angle: " << chosenangle << " minangle: " << minangle << "\n";
 		return chosenangle < minangle;
 	}
@@ -575,5 +595,23 @@ namespace TTbarAnalysis
 		std::cout << "Momentum: " << MathOperator::getModule(result[0]->getAssociatedParticle()->getMomentum()) << "\n";
 		return result;
 	}
+	float RecoveryOperator::getHadronMomentum(vector< LCObject * > & objs)
+	{
+		float momentum[3];
+		momentum[0] = 0;
+		momentum[1] = 0;
+		momentum[2] = 0;
+		for (unsigned int i = 0; i < objs.size(); i++) 
+		{
+			Vertex * vertex = dynamic_cast< Vertex * >(objs[i]);
+			for (unsigned int j = 0; j < 3; j++) 
+			{
+				momentum[j] += vertex->getAssociatedParticle()->getMomentum()[j];
+			}
+		}
+		float module = MathOperator::getModule(momentum);
+		return module;
+	}
+
 
 }

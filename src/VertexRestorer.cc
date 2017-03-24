@@ -441,7 +441,7 @@ namespace TTbarAnalysis
 				LCCollection* relation = evt->getCollection(_colRelName);
 				LCCollection* jetcol = evt->getCollection( _colJetName );
 				LCCollection* relcol = evt->getCollection( _colJetRelName );
-				LCCollection* genvertexcol = evt->getCollection( _colMCvertexName );
+				//LCCollection* genvertexcol = evt->getCollection( _colMCvertexName );
 				
 				RecoveryOperator recovery(primary, maincol);
 				//std::cout << "HERE!";
@@ -1209,8 +1209,10 @@ namespace TTbarAnalysis
 			//return true;
 			//double observable = MathOperator::getModule(primary->getMomentum()) / MathOperator::getModule(sec->getAssociatedParticle()->getMomentum());
 			vector< float > direction = MathOperator::getDirection(primary->getMomentum());
+			vector< float > directionTrack = MathOperator::getDirection(trackPosition);
 			double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
 			double * secondaryPosition = MathOperator::toDoubleArray(sec->getPosition(),3);
+			float sin = std::sin(MathOperator::getAngles(direction)[1]);
 			float primaryOffset = MathOperator::getDistanceTo(primaryPosition, direction, trackPosition);
 			//float accuracy = GetError(primary);
 			//float accuracy = std::sqrt(myTrackOperator.GetOffsetError(primary, trackPosition, myPrimary, primaryOffset));
@@ -1219,9 +1221,17 @@ namespace TTbarAnalysis
 			vector<float> diff = MathOperator::getDirection(secondaryPosition, trackPosition);
 			vector< float > directionVtx = MathOperator::getDirection(secondaryPosition);
 			double diif[3];
+			double aright[3];
+			//trackPosition[2] *= sin * sin;
+			float primaryOffsetTest = MathOperator::getDistanceTo(ip, direction, trackPosition);
+
+			float observable =0; //MathOperator::getModule(*MathOperator::vectorProduct(directionVtx, direction));//MathOperator::getAngle(primary->getMomentum(), secondaryPosition);
+			float cosbeta = std::cos(MathOperator::getAngle(trackPosition, primary->getMomentum()));
 			for (int m = 0; m < 3; m++) 
 			{
 				diif[m] = diff[m];
+				aright[m] = cosbeta * MathOperator::getModule(trackPosition) * direction[m] - trackPosition[m];
+				observable += aright[m] * directionVtx[m];
 			}
 			float angle = MathOperator::getAngle(diif, primary->getMomentum());
 			float angleError = 1.0;
@@ -1246,7 +1256,7 @@ namespace TTbarAnalysis
 			float radius = std::abs(1. / primary->getTracks()[0]->getOmega());
 			float phi = 1.571 - primary->getTracks()[0]->getPhi();
 			float distance = MathOperator::getModule(secondaryPosition);
-			float observable = MathOperator::getAngle(primary->getMomentum(),sec->getAssociatedParticle()->getMomentum());
+			//float observable = MathOperator::getAngle(primary->getMomentum(),sec->getAssociatedParticle()->getMomentum());
 			//float observable = std::atan((radius - std::sqrt(radius*radius - distance*distance)) / distance);
 			//float observable = (std::pow(secondaryPosition[0] - radius * std::cos(phi) - trackPosition[0],2) + std::pow(secondaryPosition[1] - radius * std::sin(phi) - trackPosition[1],2) - radius * radius) / (radius * radius);
 			//float chi2 = getChi2(primary, sec);
@@ -1257,8 +1267,9 @@ namespace TTbarAnalysis
 			}
 			int ntracks = sec->getAssociatedParticle()->getParticles().size();
 			float z = MathOperator::getModule(primary->getMomentum()) / MathOperator::getModule(jet->getMomentum());
-			float anglecut = 0.1;//(abs(costheta) > 0.9)? 0.05: 0.1;
+			float anglecut = 0.9;//(abs(costheta) > 0.9)? 0.05: 0.1;
 			float deviation = myTrackOperator.GetOffsetSignificance(primary);
+			observable = - observable / abs(observable) * deviation;  //MathOperator::getModule(aright) / primaryOffsetTest;//trackDistance;//MathOperator::getAngle(aright, primary->getMomentum());
 			//float deviation = primaryOffset /accuracy;
 			//bool result = //(primaryOffset /accuracy  > 2.5 *std::atan(angle * 100) || angle < 0.005)   &&
 				//!(angle > 0.04 && z < 0.06) &&
@@ -1289,7 +1300,7 @@ namespace TTbarAnalysis
 					newparticle->SetObservable(observable);
 					newparticle->SetAccuracy(accuracy);
 					newparticle->SetOffset(primaryOffset);
-					newparticle->SetSecOffset(secOffset);
+					newparticle->SetSecOffset(trackPosition[2]);
 					newparticle->SetCostheta(costheta);
 					newparticle->SetCosthetaVtx(costhetaVtx);
 					if (jet) 
