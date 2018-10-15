@@ -7,6 +7,7 @@
 #include "MathOperator.hh"
 #include "MyReconstructedParticle.hh"
 #include "TrackOperator.hh"
+#include "marlin/VerbosityLevels.h"
 
 #include <EVENT/LCRelation.h>
 #include <IMPL/LCRelationImpl.h>

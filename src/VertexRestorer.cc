@@ -330,7 +330,7 @@ namespace TTbarAnalysis
       {
 	return;
       }
-    std::cout << "|\t" << track->getD0() 
+    streamlog_out(DEBUG) << "|\t" << track->getD0() 
 	      << "|\t" << track->getZ0() 
 	      << "|\t" << track->getPhi() 
 	      << "|\t" << track->getOmega() 
@@ -349,7 +349,7 @@ namespace TTbarAnalysis
       {
 	return vertex->isPrimary();
       }
-    std::cout << "Particle has no vertex!\n";
+    streamlog_out(DEBUG) << "Particle has no vertex!\n";
     return false;
   }
   void  VertexRestorer::CopyParameters(EVENT::LCParameters & from, EVENT::LCParameters & to)
@@ -360,33 +360,33 @@ namespace TTbarAnalysis
     from.getFloatKeys(floatkeys);
     vector<string> stringkeys;
     from.getStringKeys(stringkeys);
-    //std::cout << "Int keys size: " << intkeys.size() << "\n";
+    //streamlog_out(DEBUG) << "Int keys size: " << intkeys.size() << "\n";
     for (unsigned int i = 0; i < intkeys.size(); i++) 
       {
 	vector<int> intvals;
 	from.getIntVals(intkeys[i], intvals);
-	//std::cout << "Int key "<< intkeys[i] << " has " << intvals.size() << " values\n";
+	//streamlog_out(DEBUG) << "Int key "<< intkeys[i] << " has " << intvals.size() << " values\n";
 	to.setValues(intkeys[i], intvals);
       }
-    //std::cout << "Float keys size: " << floatkeys.size() << "\n";
+    //streamlog_out(DEBUG) << "Float keys size: " << floatkeys.size() << "\n";
     for (unsigned int i = 0; i < floatkeys.size(); i++) 
       {
 	vector<float> floatvals;
 	from.getFloatVals(floatkeys[i], floatvals);
-	/*std::cout << "Float key "<< floatkeys[i] << " has " << floatvals.size() << " values\n";
+	/*streamlog_out(DEBUG) << "Float key "<< floatkeys[i] << " has " << floatvals.size() << " values\n";
 	  for (int j = 0; j < floatvals.size(); j++) 
 	  {
-	  std::cout << "\t" << floatvals[j] <<"\n";
+	  streamlog_out(DEBUG) << "\t" << floatvals[j] <<"\n";
 	  }*/
 	to.setValues(floatkeys[i], floatvals);
       }
-    //std::cout << "String keys size: " << stringkeys.size() << "\n";
+    //streamlog_out(DEBUG) << "String keys size: " << stringkeys.size() << "\n";
     for (unsigned int i = 0; i < stringkeys.size(); i++) 
       {
 	vector<string> stringvals;
 	from.getStringVals(stringkeys[i], stringvals);
-	//std::cout << "String key "<< stringkeys[i] << " has " << stringvals.size() << " values\n";
-	//	std::cout << "\t" << from.getStringVal(stringkeys[0]) <<"\n";
+	//streamlog_out(DEBUG) << "String key "<< stringkeys[i] << " has " << stringvals.size() << " values\n";
+	//	streamlog_out(DEBUG) << "\t" << from.getStringVal(stringkeys[0]) <<"\n";
 	to.setValues(stringkeys[i], stringvals);
       }
   }
@@ -409,7 +409,7 @@ namespace TTbarAnalysis
     int vtxhits = 0;
     int tpchits = 0;
     int ftdhits = 0;
-    std::cout << std::fixed << std::setw( 6 ) << std::setprecision( 3 ) << std::setfill( ' ' );
+    streamlog_out(DEBUG) << std::fixed << std::setw( 6 ) << std::setprecision( 3 ) << std::setfill( ' ' );
     //int id =  particle->getTracks()[0]->getSubdetectorHitNumbers()[4];
     if (abs(particle->getCharge()) > 0.5) 
       {
@@ -420,7 +420,7 @@ namespace TTbarAnalysis
     vector<float> direction = MathOperator::getDirection(particle->getMomentum());
     float costheta = std::cos(MathOperator::getAngles(direction)[1]);
     //float chi2 = (particle->getTracks().size() > 0)? particle->getTracks()[0]->getChi2() / (float)particle->getTracks()[0]->getNdf() : -1.0;
-    std::cout<<"|"<<vtxhits << ":" <<ftdhits<<":" <<tpchits <<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge() <<"\t\t|"<< costheta <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
+    streamlog_out(DEBUG)<<"|"<<vtxhits << ":" <<ftdhits<<":" <<tpchits <<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge() <<"\t\t|"<< costheta <<"\t\t|"<<particle->getEnergy() <<"\t\t|\n";
   }
   void VertexRestorer::processEvent( LCEvent * evt ) 
   { 
@@ -428,7 +428,7 @@ namespace TTbarAnalysis
 		  
     try 
       {
-	std::cout << "********VertexRecovery*"<<_nEvt << "**********\n";
+	streamlog_out(DEBUG) << "********VertexRecovery*"<<_nEvt << "**********\n";
 	TrackOperator opera;
 	//opera.test();
 	LCCollection* trackrelcol = evt->getCollection( "MarlinTrkTracksMCTruthLink" );
@@ -446,7 +446,7 @@ namespace TTbarAnalysis
 
 				
 	RecoveryOperator recovery(primary, maincol);
-	//std::cout << "HERE!";
+	//streamlog_out(DEBUG) << "HERE!";
 	LCCollection* trashcol = (_useTracks)? evt->getCollection( _colTrashCanName ) : NULL;
 	/*vector< Vertex * > newvertices = recovery.RecoverBuildVertices(seccol,trashcol);
 	  IMPL::LCCollectionVec * newseccol = new IMPL::LCCollectionVec ( EVENT::LCIO::VERTEX ) ;
@@ -484,7 +484,7 @@ namespace TTbarAnalysis
 		      {
 			continue;
 		      }
-		    //std::cout << "HERE!!!\n" ;
+		    //streamlog_out(DEBUG) << "HERE!!!\n" ;
 		    //newvtxRPcol->addElement(newvertices[i]->getAssociatedParticle()->getParticles()[j]);
 		  }
 	      }
@@ -498,8 +498,8 @@ namespace TTbarAnalysis
 	      }
 	    catch(UTIL::UnknownAlgorithm &e)
 	      {
-		std::cout << "No algorithm lcfiplus!\n";
-		std::cout << "Jet number: " << jetcol->getNumberOfElements() << "\n";
+		streamlog_out(DEBUG) << "No algorithm lcfiplus!\n";
+		streamlog_out(DEBUG) << "Jet number: " << jetcol->getNumberOfElements() << "\n";
 		alid = -1;
 	      }
 	    int newalid = (alid < 0)? 0 : pidh.addAlgorithm("vtxrec", pidh.getParameterNames (alid));
@@ -532,7 +532,7 @@ namespace TTbarAnalysis
 		  {
 		    params[pidh.getParameterIndex(alid,"BTag")] = btag2;
 		  }
-		std::cout << "BTAG: " << btag << " BTAG NEW: " << btag2 << " p: " << bmomentum  << "\n";
+		streamlog_out(DEBUG) << "BTAG: " << btag << " BTAG NEW: " << btag2 << " p: " << bmomentum  << "\n";
 		pidh.setParticleID(jetpart, 42, 9999, 0.0, newalid, params);
 	      }
 	    newjetcol->setSubset( true);
@@ -544,7 +544,7 @@ namespace TTbarAnalysis
 	    CopyParameters(secRPcol->parameters (), newvtxRPcol->parameters ());
 	    evt->addCollection( newvtxRPcol, _outputjetrelRPcolName ) ;
 	    _totaltracks += recovery.GetStatistics();
-	    std::cout << "Total added tracks: " << _totaltracks << "\n";
+	    streamlog_out(DEBUG) << "Total added tracks: " << _totaltracks << "\n";
 	  }
 	else 
 	  {
@@ -569,8 +569,8 @@ namespace TTbarAnalysis
       }
     catch( DataNotAvailableException &e)
       {
-	std::cout << "Whoops!....\n";
-	std::cout << e.what();
+	streamlog_out(DEBUG) << "Whoops!....\n";
+	streamlog_out(DEBUG) << e.what();
       }
 		    
   }
@@ -612,7 +612,7 @@ namespace TTbarAnalysis
 	MCParticle * trashmc = CompareToCollection(trashreco, mccol, trackrel, true);
 	if (!trashmc) 
 	  {
-	    std::cout << "No mc particle!!\n";
+	    streamlog_out(DEBUG) << "No mc particle!!\n";
 	    _trashHasMCParticle[i] = 0;
 	    continue;
 	  }
@@ -621,13 +621,13 @@ namespace TTbarAnalysis
 	  {
 	    if (taken[j] == trashmc) 
 	      {
-		std::cout << "Particle is dublicate\n";
+		streamlog_out(DEBUG) << "Particle is dublicate\n";
 		_trashIsDublicate[i] = 1;
 	      }
 	  }
 	taken.push_back(trashmc);
 	_trashHasMCParticle[i] = 1;
-	std::cout << "MC p: " << MathOperator::getModule(trashmc->getMomentum())
+	streamlog_out(DEBUG) << "MC p: " << MathOperator::getModule(trashmc->getMomentum())
 		  << " q: " << trashmc->getCharge()
 		  << "\n";
 	vector<float> direction = MathOperator::getDirection(trashmc->getMomentum());
@@ -646,17 +646,17 @@ namespace TTbarAnalysis
 	  }
 	if (trashreco2) 
 	  {
-	    std::cout << "Reco particle found:\n";
+	    streamlog_out(DEBUG) << "Reco particle found:\n";
 	    _trashIsReco[i] = 1;
 	    PrintParticle(trashreco2);
 	  }
 	else 
 	  {
 	    _trashIsReco[i] = 0;
-	    std::cout << "Reco particle NOT found!\n";
+	    streamlog_out(DEBUG) << "Reco particle NOT found!\n";
 	  }
       }
-    std::cout << "Total: " << _trashTotal << "\n";
+    streamlog_out(DEBUG) << "Total: " << _trashTotal << "\n";
   }
 
   void VertexRestorer::WritePrimaries(TrackOperator & opera, EVENT::LCCollection * pricol, EVENT::LCCollection * sec, EVENT::LCCollection * rel)
@@ -672,7 +672,7 @@ namespace TTbarAnalysis
 	//opera.test(primaries[i]);
 	if (sec && rel && CompareToCollection(primaries[i], sec,rel)) 
 	  {
-	    std::cout << "EXCLUDED!\n";
+	    streamlog_out(DEBUG) << "EXCLUDED!\n";
 	    continue;
 	  }
 	vector<float> direction = MathOperator::getDirection(primaries[i]->getMomentum());
@@ -691,9 +691,9 @@ namespace TTbarAnalysis
 	_primeVtxHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[0];
 	_primeFtdHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[5];
 	_primeEtdHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[10];
-	//std::cout << "Offset: " << _primeOffset[i] << "; error^2: " << _primeError[i] << '\n'; 
+	//streamlog_out(DEBUG) << "Offset: " << _primeOffset[i] << "; error^2: " << _primeError[i] << '\n'; 
 	_primeDeviation[i] = myTrackOperator.GetOffsetSignificance(primaries[i]); //_primeOffset[i] / _primeError[i]; 
-	//std::cout << "Offset: " << _primeOffset[i] << " deviation: " << _primeDeviation[i] << '\n';
+	//streamlog_out(DEBUG) << "Offset: " << _primeOffset[i] << " deviation: " << _primeDeviation[i] << '\n';
 				
       }
 
@@ -702,7 +702,7 @@ namespace TTbarAnalysis
   {
     if (!daughter || daughter->getParents().size() < 1) 
       {
-	//std::cout << "\tno parents\n";
+	//streamlog_out(DEBUG) << "\tno parents\n";
 	return NULL;
       }
     MCParticle * parent = daughter->getParents()[0];
@@ -715,10 +715,10 @@ namespace TTbarAnalysis
 	parentpdg == 11 ||
 	parentpdg == 13) 
       {
-	//std::cout << "\tcontinue to search with " << parentpdg <<'\n';
+	//streamlog_out(DEBUG) << "\tcontinue to search with " << parentpdg <<'\n';
 	return GetInterestingParent(parent);
       }
-    //std::cout << "Satisfied with " << parentpdg <<'\n';
+    //streamlog_out(DEBUG) << "Satisfied with " << parentpdg <<'\n';
     return parent;
   }
   void VertexRestorer::WritePurgatory(LCCollection * pricol, LCCollection * sec, LCCollection * pfos, LCCollection *egprongs, LCCollection *rel, LCCollection *mccol)
@@ -753,13 +753,13 @@ namespace TTbarAnalysis
 	  }
 	if (sec && rel && CompareToCollection(purparticle, egprongs,rel)) 
 	  {
-	    std::cout << "EXCLUDED2!\n";
+	    streamlog_out(DEBUG) << "EXCLUDED2!\n";
 	    continue;
 	  }
 	MCParticle * mcp = CompareToCollection(purparticle, mccol,rel);
 	if (mcp) 
 	  {
-	    //std::cout << "Start looking for parent of " << abs(mcp->getPDG()) << "\n";
+	    //streamlog_out(DEBUG) << "Start looking for parent of " << abs(mcp->getPDG()) << "\n";
 	    MCParticle * parent = GetInterestingParent(mcp);
 	    _purgatoryParent[_purgatoryTotal] = (parent)? abs(parent->getPDG()): 0; 
 	    if (abs(mcp->getPDG()) == 13 && mcp->getParents().size() > 0 && _purgatoryParent[_purgatoryTotal] == 92 ) 
@@ -788,16 +788,16 @@ namespace TTbarAnalysis
 	_purgatoryDeviation[_purgatoryTotal] = _purgatoryOffset[_purgatoryTotal] / _purgatoryError[_purgatoryTotal]; 
 	if ( purparticle->getStartVertex()) 
 	  {
-	    //std::cout << "Particle has start vertex  "<< purparticle->getStartVertex()->isPrimary() << "\n";
+	    //streamlog_out(DEBUG) << "Particle has start vertex  "<< purparticle->getStartVertex()->isPrimary() << "\n";
 	  }
 	else 
 	  {
-	    //std::cout << "PRIMARY PARTICLE HAS NO VERTEX!!!\n";
+	    //streamlog_out(DEBUG) << "PRIMARY PARTICLE HAS NO VERTEX!!!\n";
 	  }
 	_purgatoryTotal++;
 
       }
-    std::cout << "Primaries: " << primaries.size() 
+    streamlog_out(DEBUG) << "Primaries: " << primaries.size() 
 	      << " primaries+secondaries: " << particles->size() 
 	      << " purgatories: " << _purgatoryTotal
 	      << " PFOs: " << pfocharge 
@@ -821,7 +821,7 @@ namespace TTbarAnalysis
       }
     if (obj.size() < 1)
       {
-	std::cout << "Particle was not generated!\n";
+	streamlog_out(DEBUG) << "Particle was not generated!\n";
 	return false;
       }
     MCParticle * winner = NULL;
@@ -868,7 +868,7 @@ namespace TTbarAnalysis
 	if (CompareToCollection(particle, prongs, rel, byTracks)) 
 	  {
 	    taken = true;
-	    std::cout << "Found a prong!\n";
+	    streamlog_out(DEBUG) << "Found a prong!\n";
 	    //_missedError[_missedDetected] = GetError(particle);
 	    _missedError[_missedDetected] = detected->at(i)->GetAccuracy();
 	    _missedMomentum[_missedDetected] = MathOperator::getModule(particle->getMomentum());
@@ -920,11 +920,11 @@ namespace TTbarAnalysis
 	    _purOffset[_purDetected] =  detected->at(i)->GetOffset();
 	    _purAngle[_purDetected] =  detected->at(i)->GetAngle();
 	    _purCostheta[_purDetected] =  detected->at(i)->GetCostheta();
-	    std::cout << "Purgatory detected!\n";
+	    streamlog_out(DEBUG) << "Purgatory detected!\n";
 	    _purDetected++;
 	  }
       }
-    std::cout << "Total detected: " << _detectedTotal
+    streamlog_out(DEBUG) << "Total detected: " << _detectedTotal
 	      << "; missed total: " << _missedTotal
 	      << "; missed detected: " << _missedDetected
 	      << "; B* detected: " << _bstarDetected
@@ -1013,7 +1013,7 @@ namespace TTbarAnalysis
 	  }
       }
     //_fakeDetected = _detectedTotal - _missedDetected - _bstarDetected;
-    std::cout << "Total detected: " << _detectedTotal
+    streamlog_out(DEBUG) << "Total detected: " << _detectedTotal
 	      << "; missed total: " << _missedTotal
 	      << "; missed detected: " << _missedDetected
 	      << "; B* detected: " << _bstarDetected
@@ -1073,7 +1073,7 @@ namespace TTbarAnalysis
     /*float mindprime = 1000;
       float maxdprime = 0;
       double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
-      //std::cout << "Vertex position: " << MathOperator::getModule(sec->getPosition()) << " Chi2: " << sec->getChi2() << "\n";
+      //streamlog_out(DEBUG) << "Vertex position: " << MathOperator::getModule(sec->getPosition()) << " Chi2: " << sec->getChi2() << "\n";
       for (int i = 0; i < secondaries.size(); i++) 
       {
       double * secPos = myTrackOperator.GetStartPoint(secondaries[i]);
@@ -1096,7 +1096,7 @@ namespace TTbarAnalysis
       }
 
       }
-      //std::cout << "\tdmin'= " << mindprime << "\tdmax'= " << maxdprime << "\n";
+      //streamlog_out(DEBUG) << "\tdmin'= " << mindprime << "\tdmax'= " << maxdprime << "\n";
       result.push_back(mindprime);
       result.push_back(maxdprime);
       return result;*/
@@ -1127,8 +1127,8 @@ namespace TTbarAnalysis
 	  }
 	float angle = MathOperator::getAngle(diif, primary->getMomentum());
 	int vtxhits = primary->getTracks()[0]->getSubdetectorHitNumbers()[0];
-	//std::cout << "\t\toffset: " << primaryOffset / GetError(primary) << "\n";
-	std::cout << "\t\tangle: " << angle << "\n";
+	//streamlog_out(DEBUG) << "\t\toffset: " << primaryOffset / GetError(primary) << "\n";
+	streamlog_out(DEBUG) << "\t\tangle: " << angle << "\n";
 	float momentum = MathOperator::getModule(primary->getMomentum());
 	meanVtx += vtxhits;
 	meanAngle += angle;
@@ -1288,7 +1288,7 @@ namespace TTbarAnalysis
 			
     if (result) 
       {
-	std::cout << "Found a track with offset " << primaryOffset
+	streamlog_out(DEBUG) << "Found a track with offset " << primaryOffset
 		  << ", error " << accuracy//GetError(primary) 
 		  << ", Angle " << angle //GetError(primary) 
 		  << ", ntracks " << ntracks //distance//GetError(primary) 
@@ -1346,7 +1346,7 @@ namespace TTbarAnalysis
 	    //if (!found) 
 	    if (!IsDublicate(primary, *particles))
 	      {
-		std::cout << "The particle is unique!\n";
+		streamlog_out(DEBUG) << "The particle is unique!\n";
 		//float errorvtx = (sec->getChi2() < 0.00001)? 0.00001: sec->getChi2();
 		result.push_back(newparticle);
 	      }
@@ -1431,7 +1431,7 @@ namespace TTbarAnalysis
   {
     if (particle1 == particle2) 
       {
-	//std::cout << "Equal pointers!\n";
+	//streamlog_out(DEBUG) << "Equal pointers!\n";
 	return true;
       }
     //return false;
@@ -1525,7 +1525,7 @@ namespace TTbarAnalysis
 			}
 			catch(UTIL::UnknownAlgorithm &e)
 			{
-			std::cout << "No algorithm lcfiplus!\n";
+			streamlog_out(DEBUG) << "No algorithm lcfiplus!\n";
 			alid = 0;
 			}
 			vector< ReconstructedParticle * > * particles = new vector< ReconstructedParticle * >();
@@ -1549,7 +1549,7 @@ namespace TTbarAnalysis
 			{
 			continue;
 			}
-			std::cout << "Jet energy: " << jet->getEnergy()
+			streamlog_out(DEBUG) << "Jet energy: " << jet->getEnergy()
 			<< " b-tag: " << btag 
 			<< " c-tag: " << ctag 
 			<< " # of vtx: " << nvtx
@@ -1581,7 +1581,7 @@ namespace TTbarAnalysis
     vector< ReconstructedParticle * >  resurrected;
     if (trash) 
       {
-	//std::cout << "Resurrected particles: \n";
+	//streamlog_out(DEBUG) << "Resurrected particles: \n";
 	int tracknumber = trash->getNumberOfElements();
 	vector< ReconstructedParticle * > jetparticles;
 	for (int i = 0; i < number; i++) 
@@ -1607,19 +1607,19 @@ namespace TTbarAnalysis
 	      {
 		if (j != i && CompareParticles(resurrected[i],resurrected[j])) 
 		  {
-		    std::cout <<"Found same zombies i: "<< i << " j: " << j <<"!\n";
+		    streamlog_out(DEBUG) <<"Found same zombies i: "<< i << " j: " << j <<"!\n";
 		    //PrintParticle(resurrected[i]);
 		    //PrintParticle(resurrected[j]);
 		  }
 	      }
 	  }
-	std::cout << "\n";
+	streamlog_out(DEBUG) << "\n";
       }
     for (int i = 0; i < number; i++) 
       {
 	ReconstructedParticle * jet = dynamic_cast<ReconstructedParticle *>(jetcol->getElementAt(i));
 	int nvtx = navigator.getRelatedToObjects(jet).size();
-	std::cout << "Jet energy: " << jet->getEnergy() 
+	streamlog_out(DEBUG) << "Jet energy: " << jet->getEnergy() 
 	  // << " b-tag: " << btag 
 	  // << " c-tag: " << ctag 
 		  << " # of vtx: " << nvtx 
@@ -1720,7 +1720,7 @@ namespace TTbarAnalysis
 	    //&& secondaryOffset < 5.0
 	    && angle < 0.03)
 	  {
-	    std::cout << "Found a track with offset " << primaryOffset
+	    streamlog_out(DEBUG) << "Found a track with offset " << primaryOffset
 		      << ", deviation " << primaryOffset / accuracy 
 		      << ", angle " << angle
 		      << ", distance " << MathOperator::getModule(trackPosition)
@@ -1739,7 +1739,7 @@ namespace TTbarAnalysis
 	      }
 	    if (!found) 
 	      {
-		std::cout << "The particle is unique!\n";
+		streamlog_out(DEBUG) << "The particle is unique!\n";
 		//	if (!IsDublicate(primaryTrack,result)) 
 		{
 		  result.push_back(CopyParticle(primaryTrack,sec, tan));
@@ -1772,7 +1772,7 @@ namespace TTbarAnalysis
       {
 	if (CompareParticles(particle, data[j])) 
 	  {
-	    //std::cout << "Dublicate found!!!!\n";
+	    //streamlog_out(DEBUG) << "Dublicate found!!!!\n";
 	    dublicate = true;
 	    break;
 	  }
@@ -1786,7 +1786,7 @@ namespace TTbarAnalysis
       {
 	if (CompareParticles(particle->Get(), data[j]->Get())) 
 	  {
-	    //std::cout << "Dublicate found!!!!\n";
+	    //streamlog_out(DEBUG) << "Dublicate found!!!!\n";
 	    dublicate = true;
 	    break;
 	  }
@@ -1797,7 +1797,7 @@ namespace TTbarAnalysis
   {
     if (!particle || particle->getTracks().size() < 1) 
       {
-	std::cout << "The particle is null or 0 tracks!\n";
+	streamlog_out(DEBUG) << "The particle is null or 0 tracks!\n";
 	return 0.0;
       }
     float p = MathOperator::getModule(particle->getMomentum());
@@ -1841,20 +1841,20 @@ namespace TTbarAnalysis
 	float cos = std::cos(MathOperator::getAngles(direction)[1]);
 	if (times == 1) 
 	  {
-	    std::cout << "A good one found\n";
+	    streamlog_out(DEBUG) << "A good one found\n";
 	    _costhetaTestedGood[_ngoodtest] = cos;
 	    _ngoodtest++;
 	  }
 	if (times == 0) 
 	  {
-	    std::cout << "A lost one found\n";
+	    streamlog_out(DEBUG) << "A lost one found\n";
 
 	    _costhetaTestedLost[_nlosttest] = cos;
 	    _nlosttest++;
 	  }
 	if (times>1) 
 	  {
-	    std::cout << "Several tracks found\n";
+	    streamlog_out(DEBUG) << "Several tracks found\n";
 	    _costhetaTestedMultiple[_nmultitest] = cos;
 	    _nmultitest++;
 	  }
@@ -1886,7 +1886,7 @@ namespace TTbarAnalysis
     point[2] = 0.0;
     vector< float > direction = MathOperator::getDirection(momentum);
     float offset = MathOperator::getDistanceTo(point, direction, zero);
-    std::cout << "Our offset is " << offset << "mm\n";
+    streamlog_out(DEBUG) << "Our offset is " << offset << "mm\n";
     int vtxnumber = pfo->getNumberOfElements();
 
     _ntest = 0;
@@ -1910,7 +1910,7 @@ namespace TTbarAnalysis
 		vector< float > secDir1 = MathOperator::getDirection(particles[k]->getMomentum());
 		//float distance = MathOperator::getAngle(particles[j]->getMomentum(), particles[i]->getMomentum());
 		float distance = MathOperator::getDistanceBtw(secPos, secDir, secPos1, secDir1);
-		std::cout << "i: " << i << " j: " << j << " distance: " << distance << "\n";
+		streamlog_out(DEBUG) << "i: " << i << " j: " << j << " distance: " << distance << "\n";
 		if (distance < minDistance) 
 		  {
 		    minDistance = distance;
@@ -1930,7 +1930,7 @@ namespace TTbarAnalysis
       vector< float > weights = navigator.getRelatedFromWeights(mcparticle);
       if (obj.size() < 1)
       {
-      std::cout << "Particle was not generated!\n";
+      streamlog_out(DEBUG) << "Particle was not generated!\n";
       return false;
       }
       MCParticle * winner = NULL;
@@ -2007,10 +2007,10 @@ namespace TTbarAnalysis
 			
     float meanObs = parametersVertex[6];
     float sigmaObs = (parametersVertex[7] < 0.00001)? 1. / ntracks : parametersVertex[7];
-    std::cout << "\tmean offset: " << meanOffset << " sigma: "  << sigmaOffset << "\n";
-    std::cout << "\tmean angle: " << meanAngle << " sigma: "  << sigmaAngle << "\n";
-    std::cout << "\tmean nvtxhits: " << meanVtx << " sigma: "  << sigmaVtx << "\n";
-    std::cout << "\tmean obs: " << meanObs << " sigma: "  << sigmaObs << "\n";
+    streamlog_out(DEBUG) << "\tmean offset: " << meanOffset << " sigma: "  << sigmaOffset << "\n";
+    streamlog_out(DEBUG) << "\tmean angle: " << meanAngle << " sigma: "  << sigmaAngle << "\n";
+    streamlog_out(DEBUG) << "\tmean nvtxhits: " << meanVtx << " sigma: "  << sigmaVtx << "\n";
+    streamlog_out(DEBUG) << "\tmean obs: " << meanObs << " sigma: "  << sigmaObs << "\n";
 			
     //return 0.0;
     float chi2 = std::pow(primaryOffset / accuracy - meanOffset, 2) /std::pow( sigmaOffset, 2) +

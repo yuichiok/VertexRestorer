@@ -27,15 +27,15 @@ namespace TTbarAnalysis
 		{
 			return;
 		}
-		//std::cout << std::fixed << std::setw( 6 ) << std::setprecision( 3 ) << std::setfill( ' ' );
+		//streamlog_out(DEBUG) << std::fixed << std::setw( 6 ) << std::setprecision( 3 ) << std::setfill( ' ' );
 		int id =  particle->getTracks()[0]->getSubdetectorHitNumbers()[4];
 		if (particle->getParticleIDUsed()) 
 		{
-			std::cout << "Type " << particle->getParticleIDUsed()->getType() << '\n';
+			streamlog_out(DEBUG) << "Type " << particle->getParticleIDUsed()->getType() << '\n';
 			id = particle->getParticleIDs()[0]->getPDG(); 
 		}
 		float chi2 = (particle->getTracks().size() > 0)? particle->getTracks()[0]->getChi2() / (float)particle->getTracks()[0]->getNdf() : -1.0;
-		std::cout<<"|"<< id <<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy() <<"\t\t|"<< chi2 <<"\t\t|\n";
+		streamlog_out(DEBUG)<<"|"<< id <<"\t\t|"<<particle->getMass()<<"\t\t|"<<particle->getCharge()  <<"\t\t|"<<particle->getEnergy() <<"\t\t|"<< chi2 <<"\t\t|\n";
 	}
 	vector< ReconstructedParticle * > RecoveryOperator::getPFOParticles()
 	{
@@ -89,11 +89,11 @@ namespace TTbarAnalysis
 			}
 			else 
 			{
-				//std::cout << "Disposing created particle!\n";
+				//streamlog_out(DEBUG) << "Disposing created particle!\n";
 				delete particle;
 			}
 		}
-		std::cout << "\n";
+		streamlog_out(DEBUG) << "\n";
 		return result;
 	}
 	vector< Vertex * > RecoveryOperator::RecoverJetVertices(LCCollection * jetcol, LCCollection * jetrelcol, LCCollection * secvtx, LCCollection * damagedcol, LCCollection * newjetrelcol)
@@ -111,7 +111,7 @@ namespace TTbarAnalysis
 		{
 			ReconstructedParticle * jet = dynamic_cast<ReconstructedParticle *>(jetcol->getElementAt(i));
 			int nvtx = navigator.getRelatedToObjects(jet).size();
-			std::cout << "Jet energy: " << jet->getEnergy() << "\n";
+			streamlog_out(DEBUG) << "Jet energy: " << jet->getEnergy() << "\n";
 			vector< LCObject * > objs = navigator.getRelatedToObjects(jet);
 			vector< Vertex * > oldvtx;
 			float pHadron = getHadronMomentum(objs);
@@ -119,7 +119,7 @@ namespace TTbarAnalysis
 			for (int j = 0; j < nvtx; j++) 
 			{
 				Vertex * vertex = dynamic_cast< Vertex * >(objs[j]);
-				std::cout << "Vertex distance: " << MathOperator::getModule(vertex->getPosition()) 
+				streamlog_out(DEBUG) << "Vertex distance: " << MathOperator::getModule(vertex->getPosition()) 
 					<< " tracks " << vertex->getAssociatedParticle()->getParticles().size() 
 					<< " charge " << vertex->getAssociatedParticle()->getCharge() 
 					<< " chi2: " << vertex->getChi2()
@@ -152,7 +152,7 @@ namespace TTbarAnalysis
 					}
 				}
 				Vertex * newvertex = CreateRecoveredVertex(filtered, vertex, true);
-				std::cout << "Vertex distance: " << MathOperator::getModule(newvertex->getPosition()) 
+				streamlog_out(DEBUG) << "Vertex distance: " << MathOperator::getModule(newvertex->getPosition()) 
 					<< " tracks " << newvertex->getAssociatedParticle()->getParticles().size() 
 					<< " charge " << newvertex->getAssociatedParticle()->getCharge()
 					<< "\n"
@@ -178,7 +178,7 @@ namespace TTbarAnalysis
 		{
 			if (!IsDublicate(zombies[k], taken)) 
 			{
-				//std::cout << "Disposing created particle!\n";
+				//streamlog_out(DEBUG) << "Disposing created particle!\n";
 				ReconstructedParticle * zombie = zombies[k];
 				delete zombie;
 			}
@@ -197,7 +197,7 @@ namespace TTbarAnalysis
 		for (int i = 0; i < secnumber; i++) 
 		{
 			Vertex * vertex = dynamic_cast< Vertex * >(secvtx->getElementAt(i));
-			std::cout << "Vertex distance: " << MathOperator::getModule(vertex->getPosition()) 
+			streamlog_out(DEBUG) << "Vertex distance: " << MathOperator::getModule(vertex->getPosition()) 
 				<< " tracks " << vertex->getAssociatedParticle()->getParticles().size() 
 				<< " charge " << vertex->getAssociatedParticle()->getCharge() 
 				<< " chi2: " << vertex->getChi2()
@@ -221,7 +221,7 @@ namespace TTbarAnalysis
 				}
 			}
 			Vertex * newvertex = CreateRecoveredVertex(filtered, vertex);
-			std::cout << "Vertex distance: " << MathOperator::getModule(newvertex->getPosition()) 
+			streamlog_out(DEBUG) << "Vertex distance: " << MathOperator::getModule(newvertex->getPosition()) 
 				<< " tracks " << newvertex->getAssociatedParticle()->getParticles().size() 
 				<< " charge " << newvertex->getAssociatedParticle()->getCharge()
 				<< "\n"
@@ -331,7 +331,7 @@ namespace TTbarAnalysis
 			 angle < anglecut;// + 0.03 * sine;
 		if (result) 
 		{
-			/*std::cout << "Found a track with offset " << primaryOffset
+			/*streamlog_out(DEBUG) << "Found a track with offset " << primaryOffset
 				<< ", error " << accuracy//GetError(primary) 
 				<< ", Angle " << angle //GetError(primary) 
 				//<< ", DISTANCE " << dprime - MathOperator::getModule(secondaryPosition) //distance//GetError(primary) 
@@ -345,7 +345,7 @@ namespace TTbarAnalysis
 	}
 	Vertex * RecoveryOperator::CreateRecoveredVertex(vector< ReconstructedParticle * > & newtracks, Vertex * oldvertex, bool add)
 	{
-		//std::cout << "Start to create new vertex\n";
+		//streamlog_out(DEBUG) << "Start to create new vertex\n";
 		VertexImpl * newvertex = new VertexImpl();
 		newvertex->setPrimary(false);
 		newvertex->setChi2(oldvertex->getChi2());
@@ -360,7 +360,7 @@ namespace TTbarAnalysis
 		newmomentum[0] = (!add)?0:oldparticle->getMomentum()[0];
 		newmomentum[1] = (!add)?0:oldparticle->getMomentum()[1];
 		newmomentum[2] = (!add)?0:oldparticle->getMomentum()[2];
-		//std::cout << "\tAssembling all prongs together\n";
+		//streamlog_out(DEBUG) << "\tAssembling all prongs together\n";
 		if (add) 
 		{
 			for (unsigned int i = 0; i < oldparticle->getParticles().size(); i++) 
@@ -383,11 +383,11 @@ namespace TTbarAnalysis
 		newparticle->setCharge(newcharge);
 		newparticle->setMass(newmass);
 		newparticle->setEnergy(newenergy);
-		//std::cout << "\tSetting associated particle\n";
+		//streamlog_out(DEBUG) << "\tSetting associated particle\n";
 		newvertex->setAssociatedParticle(newparticle);
 		newvertex->setAlgorithmType("lcfiplus");
 		newvertex->addParameter (newtracks.size());
-		std::cout << "Finished vertex with " << newtracks.size() << " new tracks, "
+		streamlog_out(DEBUG) << "Finished vertex with " << newtracks.size() << " new tracks, "
 			<< newparticle->getMass() - oldparticle->getMass()  << " mass gain, "
 			<< newparticle->getCharge() - oldparticle->getCharge() << " charge difference\n";
 		return newvertex;	
@@ -404,7 +404,7 @@ namespace TTbarAnalysis
 	{
 		if (!particle || particle->getTracks().size() < 1) 
 		{
-			std::cout << "The particle is null or 0 tracks!\n";
+			streamlog_out(DEBUG) << "The particle is null or 0 tracks!\n";
 			return 0.0;
 		}
 		float p = MathOperator::getModule(particle->getMomentum());
@@ -420,7 +420,7 @@ namespace TTbarAnalysis
 		{
 			if (CompareParticles(particle, data[j])) 
 			{
-				//std::cout << "Dublicate found!!!!\n";
+				//streamlog_out(DEBUG) << "Dublicate found!!!!\n";
 				dublicate = true;
 				break;
 			}
@@ -431,7 +431,7 @@ namespace TTbarAnalysis
 	{
 		if (particle1 == particle2) 
 		{
-			//std::cout << "Equal pointers!\n";
+			//streamlog_out(DEBUG) << "Equal pointers!\n";
 			return true;
 		}
 		//return false;
@@ -473,7 +473,7 @@ namespace TTbarAnalysis
 		float mindprime = 1000;
 		float maxdprime = 0;
 		//double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
-		//std::cout << "Vertex position: " << MathOperator::getModule(sec->getPosition()) << " Chi2: " << sec->getChi2() << "\n";
+		//streamlog_out(DEBUG) << "Vertex position: " << MathOperator::getModule(sec->getPosition()) << " Chi2: " << sec->getChi2() << "\n";
 		for (unsigned int i = 0; i < secondaries.size(); i++) 
 		{
 			double * secPos = myTrackOperator.GetStartPoint(secondaries[i]);
@@ -517,7 +517,7 @@ namespace TTbarAnalysis
 			Vertex * sec = vertices->at(i);
 			if (sec == chosen || sec->getAssociatedParticle()->getParticles().size() == 1) 
 			{
-				//std::cout << "Skipping\n";
+				//streamlog_out(DEBUG) << "Skipping\n";
 				continue;
 			}
 			double * vtxPos = MathOperator::toDoubleArray(sec->getPosition(),3);
@@ -536,7 +536,7 @@ namespace TTbarAnalysis
 		}
 		delete canPos;
 		delete chosenPos;
-		//std::cout << "Chosen angle: " << chosenangle << " minangle: " << minangle << "\n";
+		//streamlog_out(DEBUG) << "Chosen angle: " << chosenangle << " minangle: " << minangle << "\n";
 		return chosenangle < minangle;
 	}
 	int RecoveryOperator::GetStatistics()
@@ -546,7 +546,7 @@ namespace TTbarAnalysis
 	vector< Vertex * > RecoveryOperator::RefineJetVertices(vector< Vertex * > & oldvtx)//ReconstructedParticle * oldjet, EVENT::LCCollection * jetrelcol)
 	{
 		//LCRelationNavigator navigator(jetrelcol);
-		//std::cout << "Jet energy: " << jet->getEnergy() << "\n";
+		//streamlog_out(DEBUG) << "Jet energy: " << jet->getEnergy() << "\n";
 		//vector< LCObject * > objs = navigator.getRelatedToObjects(jet);
 		//vector< Vertex * > oldvtx;
 		int nvtx = oldvtx.size();
@@ -592,7 +592,7 @@ namespace TTbarAnalysis
 		vector<Vertex * > result;
 		result.push_back(CreateRecoveredVertex(newvtx1particles, oldvtx[0], false));
 		result.push_back(CreateRecoveredVertex(newvtx2particles, oldvtx[1], false));
-		std::cout << "Momentum: " << MathOperator::getModule(result[0]->getAssociatedParticle()->getMomentum()) << "\n";
+		streamlog_out(DEBUG) << "Momentum: " << MathOperator::getModule(result[0]->getAssociatedParticle()->getMomentum()) << "\n";
 		return result;
 	}
 	float RecoveryOperator::getHadronMomentum(vector< LCObject * > & objs)

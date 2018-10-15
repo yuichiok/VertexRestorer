@@ -6,6 +6,8 @@
 #include <EVENT/Vertex.h>
 #include "MathOperator.hh"
 #include "AlgebraImplementation.hh"
+#include "marlin/VerbosityLevels.h"
+
 #ifndef TrackOperator_hh
 #define TrackOperator_hh 1
 namespace TTbarAnalysis

@@ -43,7 +43,7 @@ namespace TTbarAnalysis
 	{
 		if (!particle || particle->getTracks().size() < 1) 
 		{
-			std::cout << "The particle is null or 0 tracks!\n";
+			streamlog_out(DEBUG) << "The particle is null or 0 tracks!\n";
 			return 0.0;
 		}
 		Track * track = particle->getTracks()[0];
@@ -153,7 +153,7 @@ namespace TTbarAnalysis
 		qcovMatrix.push_back(vcovMatrix[5] + ccovMatrix[3]);
 		double * vectorq = new double[3];
 		const double * vectorp = particle->getMomentum();
-		//std::cout << "Alpha = " << angle
+		//streamlog_out(DEBUG) << "Alpha = " << angle
 			  /*<< "\nqcovMatrix[0] = " << pcovMatrix[0] * 1000. 
 			  << "; qcovMatrix[1] = " << pcovMatrix[1] * 1000.
 			  << "; qcovMatrix[2] = " << pcovMatrix[2] * 1000.
@@ -183,7 +183,7 @@ namespace TTbarAnalysis
 		}
 		delete trackPosition;
 		delete vectorq;
-		//std::cout << "Angle uncertainty = " << std::sqrt(angleError)  << "\n";
+		//streamlog_out(DEBUG) << "Angle uncertainty = " << std::sqrt(angleError)  << "\n";
 		return angleError;
 	}
 	double TrackOperator::dangledp(float angle, const double * pvec, const double * qvec, int i)
@@ -225,12 +225,12 @@ namespace TTbarAnalysis
 		AlgebraImplementation::GetCovMatrixMomenta(particle, pcovMatrix);
 		const vector< float > ccovMatrix = getErrorPoint(particle);
 		const vector< float > ipcovMatrix = ipVertex->getCovMatrix();
-		/*std::cout <<"\n!!!cCovMatrix:\n";
+		/*streamlog_out(DEBUG) <<"\n!!!cCovMatrix:\n";
 		for (unsigned int i = 0; i < ccovMatrix.size(); i++) 
 		{
-			std::cout <<  i << ": " << ccovMatrix[i] << ' ';
+			streamlog_out(DEBUG) <<  i << ": " << ccovMatrix[i] << ' ';
 		}
-		std::cout <<"\n";*/
+		streamlog_out(DEBUG) <<"\n";*/
 		return getError(conf, pcovMatrix, ccovMatrix, ipcovMatrix);
 	}
 	float TrackOperator::getError(GConfig & conf, const vector< float > pcovMatrix, const vector< float > ccovMatrix, const vector< float > ipcovMatrix)
@@ -265,7 +265,7 @@ namespace TTbarAnalysis
 		{
 			return;
 		}
-		std::cout << "|\t" << track->getD0() 
+		streamlog_out(DEBUG) << "|\t" << track->getD0() 
 		       << "|\t" << track->getZ0() 
 		       << "|\t" << track->getPhi() 
 		       << "|\t" << track->getOmega() 
@@ -279,8 +279,8 @@ namespace TTbarAnalysis
 
 	void TrackOperator::printConf(GConfig & conf)
 	{
-		/*std::cout << "Configuration print: \n";
-		std::cout << "|\t" << conf.Momentum[0]
+		/*streamlog_out(DEBUG) << "Configuration print: \n";
+		streamlog_out(DEBUG) << "|\t" << conf.Momentum[0]
 			<< "|\t" << conf.Momentum[1]
 			<< "|\t" << conf.Momentum[2] << '\n'
 			<< "|\t" << conf.C[0]
@@ -310,18 +310,18 @@ namespace TTbarAnalysis
 	void TrackOperator::test(EVENT::ReconstructedParticle * particle)
 	{
 		double * C = GetStartPoint(particle);
-		std::cout <<"\nPoint:\n";
+		streamlog_out(DEBUG) <<"\nPoint:\n";
 		for (int i = 0; i < 3; i++) 
 		{
-			std::cout <<  i << ": " << C[i] << ' ';
+			streamlog_out(DEBUG) <<  i << ": " << C[i] << ' ';
 		}
-		std::cout <<"\nCovMatrix:\n";
+		streamlog_out(DEBUG) <<"\nCovMatrix:\n";
 		const vector<float> covMatrix = getErrorPoint(particle);	
 		for (unsigned int i = 0; i < covMatrix.size(); i++) 
 		{
-			std::cout <<  i << ": " << std::sqrt(covMatrix[i]) << ' ';
+			streamlog_out(DEBUG) <<  i << ": " << std::sqrt(covMatrix[i]) << ' ';
 		}
-		std::cout <<"\n";
+		streamlog_out(DEBUG) <<"\n";
 	}
 	const vector<float> TrackOperator::getErrorPoint(const EVENT::ReconstructedParticle * particle) const
 	{
