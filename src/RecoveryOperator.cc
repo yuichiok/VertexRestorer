@@ -245,8 +245,10 @@ namespace TTbarAnalysis
 			if (TakeParticle(candidate, sec) && !IsDublicate(candidate, *particles)) 
 			//if (TakeParticle(candidate, sec)) 
 			{
+			  streamlog_out(DEBUG) <<"Add particle --- > irles debug 0 \n";
 				if (!IsDublicate(candidate, result)) 
 				{
+				  streamlog_out(DEBUG) <<"Add particle --- > irles debug 1\n";
 					result.push_back(candidate);
 				}
 			}
@@ -312,13 +314,21 @@ namespace TTbarAnalysis
 		float p = MathOperator::getModule(primary->getMomentum());
 		float anglecut = 0.08; // 0.08
 		float deviation = myTrackOperator.GetOffsetSignificance(primary);
+                float deviationD0 = myTrackOperator.GetD0Significance(primary);
 		//float deviation = primaryOffset /accuracy;
 		//bool result = (primaryOffset /accuracy  > 110.0 * angle + 0.2  || angle < 0.005) &&
 		//bool result = (primaryOffset /accuracy  > 80.0 * angle + 0.5 || angle < 0.005) && // BEST
 		//bool result = (primaryOffset /accuracy  > 50.0 * angle + 2. || angle < 0.005) && // BETTER
 		//bool result = ( deviation > 50.0 * angle + 2. || angle < 0.005) &&
-		bool result = ( deviation > 25*sqrt(angle)+1.0 || angle < 0.001) &&
-				observable < 0.01 &&
+		//irle sbool result = (deviation >3.4) || angle < 0.005;
+		//bool result = ( deviation > 15*sqrt(angle) || angle < 0.01);// &&
+		//irles original 
+		//bool result = ( deviation > 25*sqrt(angle)+1.0 || angle < 0.001) &&
+		bool result =  ( deviationD0 > 10.*sqrt(angle)+1.5 || angle < 0.001) &&
+		//irles bbbar bool result = ( deviation > atan(40*angle)+4 || angle < 0.001 ) &&
+		  //irles bbbar ?? ( deviation < 0.3/angle+3) &&
+		//irles  original
+		  observable < 0.01 &&
 		//bool result = (primaryOffset /accuracy  > 15.0 * sqrt( angle )  || angle < 0.001) &&
 		//bool result = (primaryOffset /accuracy  > 2.2 *std::atan(angle * 100) || angle < 0.005)   &&
 		//bool result = (primaryOffset /accuracy  > 17.0 * sqrt( angle )+0.4  || angle < 0.001) &&
@@ -328,10 +338,11 @@ namespace TTbarAnalysis
 
 			//(ftdhits > 0) && angle < anglecut/2;
 		//bool result =  (primaryOffset /accuracy  > 0.7 + 1.5 * angle / angleError) &&
-			 angle < anglecut;// + 0.03 * sine;
+		  //irles
+		  angle < anglecut;// + 0.03 * sine;
 		if (result) 
 		{
-			/*streamlog_out(DEBUG) << "Found a track with offset " << primaryOffset
+		  /*streamlog_out(DEBUG) << "Found a track with offset " << primaryOffset
 				<< ", error " << accuracy//GetError(primary) 
 				<< ", Angle " << angle //GetError(primary) 
 				//<< ", DISTANCE " << dprime - MathOperator::getModule(secondaryPosition) //distance//GetError(primary) 

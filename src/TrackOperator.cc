@@ -92,6 +92,14 @@ namespace TTbarAnalysis
 		return start;
 
 	}
+  float TrackOperator::GetD0Significance(EVENT::ReconstructedParticle * particle)                                          
+  {                                                                                                                            
+    Track * track = particle->getTracks()[0];                                                                            
+    const vector<float> covMatrix = track->getCovMatrix();                                                               
+    float d0 = track->getD0();                                                                                           
+    float sigmad0 = covMatrix[0];                                                                                        
+    return std::abs(d0/std::sqrt(sigmad0));
+  } 
 	float TrackOperator::GetOffsetSignificance(EVENT::ReconstructedParticle * particle)
 	{
 		Track * track = particle->getTracks()[0];

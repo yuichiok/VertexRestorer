@@ -137,7 +137,10 @@ namespace TTbarAnalysis
 	  float _missedDeviation[MAXN];
 	  float _missedD0Deviation[MAXN];
 	  float _missedZ0Deviation[MAXN];
+	  float _missedD0[MAXN];
 	  float _missedZ0[MAXN];
+	  float _missedD0Error[MAXN];
+	  float _missedZ0Error[MAXN];
 	  float _missedSecDeviation[MAXN];
 	  float _missedOffset[MAXN];
 	  int _missedVtxHits[MAXN];
@@ -148,7 +151,10 @@ namespace TTbarAnalysis
 	  float _fakeError[MAXN];
 	  float _fakeD0Deviation[MAXN];
 	  float _fakeZ0Deviation[MAXN];
-	  float _fakeZ0[MAXN];
+	  float _fakeD0[MAXN];     
+	  float _fakeZ0[MAXN];                                                                                                                                                                        
+	  float _fakeD0Error[MAXN];                                                                                                                                                                   
+	  float _fakeZ0Error[MAXN];
 	  float _bstarError[MAXN];
 	  float _missedError[MAXN];
 	  //float _v0Error[MAXN];
