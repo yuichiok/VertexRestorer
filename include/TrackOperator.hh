@@ -31,42 +31,42 @@ namespace TTbarAnalysis
 		//
 		//	Constructors
 		//
-			TrackOperator ();
-			virtual ~TrackOperator () {};
-			float GetOffset(EVENT::ReconstructedParticle * particle);
-			float GetOffsetSignificance(EVENT::ReconstructedParticle * particle);
+	  TrackOperator ();
+	  virtual ~TrackOperator () {};
+	  float GetOffset(EVENT::ReconstructedParticle * particle);
+	  float GetOffsetSignificance(EVENT::ReconstructedParticle * particle);
 	  float GetD0Significance(EVENT::ReconstructedParticle * particle);
-			float GetAngleError(float angle, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
-			void PrintTrack(EVENT::Track * track);
-			EVENT::ReconstructedParticle * ReconstructParticle(EVENT::Track *  track);
-			float GetDistanceBtw(const EVENT::Vertex * ip, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
-			float GetError(EVENT::ReconstructedParticle * particle);
-			float GetOffsetErrorSimple(EVENT::ReconstructedParticle * particle);
-			float GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ip, double offset);
-			
-			double * GetStartPoint(const EVENT::ReconstructedParticle * particle);
-			float GetDprime(const EVENT::ReconstructedParticle * particle1, const EVENT::ReconstructedParticle * particle2, double * primaryPosition);
-			void test();
-			void test(EVENT::ReconstructedParticle * particle);
-		//
-		//	Methods
-		//
-		
-		private:
-		//
-		//	Data
-		//
-			
-		//
-		//	Private methods
-		//
-			const std::vector<float> getErrorPoint(const EVENT::ReconstructedParticle * particle) const;
-			float getError(GConfig & conf, const std::vector< float > pcovMatrix, const std::vector< float > ccovMatrix, const std::vector< float > ipcovMatrix);
-			void printConf(GConfig & conf);
-			double doffsetdC(GConfig & conf, int i);
-			double doffsetdp(GConfig & conf, int i);
-			double dangledp(float angle, const double * p, const double * q, int i);
-
+	  float GetAngleError(float angle, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
+	  void PrintTrack(EVENT::Track * track);
+	  EVENT::ReconstructedParticle * ReconstructParticle(EVENT::Track *  track, float bfield);
+	  float GetDistanceBtw(const EVENT::Vertex * ip, const EVENT::Vertex * sec, const EVENT::ReconstructedParticle * particle);
+	  float GetError(EVENT::ReconstructedParticle * particle);
+	  float GetOffsetErrorSimple(EVENT::ReconstructedParticle * particle);
+	  float GetOffsetError(EVENT::ReconstructedParticle * particle, double * trackPosition, const EVENT::Vertex * ip, double offset);
+	  
+	  double * GetStartPoint(const EVENT::ReconstructedParticle * particle);
+	  float GetDprime(const EVENT::ReconstructedParticle * particle1, const EVENT::ReconstructedParticle * particle2, double * primaryPosition);
+	  void test();
+	  void test(EVENT::ReconstructedParticle * particle);
+	  //
+	  //	Methods
+	  //
+	  
+	private:
+	  //
+	  //	Data
+	  //
+	  
+	  //
+	  //	Private methods
+	  //
+	  const std::vector<float> getErrorPoint(const EVENT::ReconstructedParticle * particle) const;
+	  float getError(GConfig & conf, const std::vector< float > pcovMatrix, const std::vector< float > ccovMatrix, const std::vector< float > ipcovMatrix);
+	  void printConf(GConfig & conf);
+	  double doffsetdC(GConfig & conf, int i);
+	  double doffsetdp(GConfig & conf, int i);
+	  double dangledp(float angle, const double * p, const double * q, int i);
+	  
 	};
 }
 #endif

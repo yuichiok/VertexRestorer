@@ -12,9 +12,9 @@ namespace TTbarAnalysis
 	TrackOperator:: TrackOperator()
 	{
 	}
-	ReconstructedParticle * TrackOperator::ReconstructParticle(EVENT::Track *  track)
+  ReconstructedParticle * TrackOperator::ReconstructParticle(EVENT::Track *  track, float _Bfield)
 	{
-		float Bz = 3.5;
+		float Bz = _Bfield;
 		float a = 3.0e-4;
 		float omega = track->getOmega();
 		float tanl = track->getTanLambda();

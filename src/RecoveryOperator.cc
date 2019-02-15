@@ -13,13 +13,14 @@ using std::vector;
 using std::string;
 namespace TTbarAnalysis
 {
-	RecoveryOperator:: RecoveryOperator(EVENT::Vertex * vertex, EVENT::LCCollection *pfos)
+  RecoveryOperator:: RecoveryOperator(EVENT::Vertex * vertex, EVENT::LCCollection *pfos, float bfield)
 	{
 		_aParameter = 0.005;
 		_bParameter = 0.01;
 		myTotalTracksCounter = 0;
 		myPrimary = vertex;
 		myPFOs = pfos;
+		_Bfield = bfield;
 	}
 	void RecoveryOperator::PrintParticle(ReconstructedParticle * particle)
 	{
@@ -77,7 +78,7 @@ namespace TTbarAnalysis
 		for (int i = 0; i < tracknumber; i++) 
 		{
 			Track * track = dynamic_cast<Track *>(trash->getElementAt(i));
-			ReconstructedParticle * particle = myTrackOperator.ReconstructParticle(track);
+			ReconstructedParticle * particle = myTrackOperator.ReconstructParticle(track,_Bfield);
 			if (!secparticles) 
 			{
 				result.push_back(particle);
@@ -324,7 +325,8 @@ namespace TTbarAnalysis
 		//bool result = ( deviation > 15*sqrt(angle) || angle < 0.01);// &&
 		//irles original 
 		//bool result = ( deviation > 25*sqrt(angle)+1.0 || angle < 0.001) &&
-		bool result =  ( deviationD0 > 10.*sqrt(angle)+1.5 || angle < 0.001) &&
+		bool result =   ( deviationD0 > 10.*sqrt(angle)+1.5 || angle < 0.001) &&
+		  // irles tests small detector ( deviationD0 > 10.*sqrt(angle)+2. && angle > 0.02) &&
 		//irles bbbar bool result = ( deviation > atan(40*angle)+4 || angle < 0.001 ) &&
 		  //irles bbbar ?? ( deviation < 0.3/angle+3) &&
 		//irles  original
