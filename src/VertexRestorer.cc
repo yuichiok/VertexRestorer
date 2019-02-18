@@ -33,13 +33,26 @@ namespace TTbarAnalysis
 			     "Name of the Calorimeter hit collection"  ,
 			     _colName ,
 			     string("PandoraPFOs") ) ;
-
+    registerInputCollection( LCIO::MCPARTICLE ,                                                                                                                                             
+                             "MCCollectionName",                                                                                    
+			     "Name of the MC Collection"  ,   
+			     _MCcolName,
+			     string("MCParticle") 
+			     ) ;
     registerInputCollection( LCIO::VERTEX,
 			     "PrimaryCollectionName" , 
 			     "Name of the PrimaryVertex collection"  ,
 			     _colPriName ,
 			     std::string("PrimaryVertex")
 			     );
+
+    registerInputCollection( LCIO::VERTEX,
+			     "FinalVertexCollectionName" ,
+			     "what is this?? Only used for purgatory writting?"  ,
+			     _colFinalVertex ,
+			     std::string("RefinedVertex")
+			     );
+
     registerOutputCollection( LCIO::VERTEX,
 			      "OutputCollectionName" , 
 			      "Name of the Vertex collection"  ,
@@ -156,6 +169,12 @@ namespace TTbarAnalysis
 			       _Test,
 			       _Test
 			       );
+    _Bfield=3.5;
+    registerProcessorParameter( "Bfield",
+                             "ILD Magnetic field", 
+                             _Bfield,
+                             _Bfield
+                             );
     _angleCut = 0.05;
     registerProcessorParameter("angleCut" , 
 			       "angle cut for association"  ,
@@ -451,7 +470,7 @@ namespace TTbarAnalysis
 
 
 				
-	RecoveryOperator recovery(primary, maincol);
+	RecoveryOperator recovery(primary, maincol,_Bfield);
 	//streamlog_out(DEBUG) << "HERE!";
 	LCCollection* trashcol = (_useTracks)? evt->getCollection( _colTrashCanName ) : NULL;
 	/*vector< Vertex * > newvertices = recovery.RecoverBuildVertices(seccol,trashcol);
@@ -569,7 +588,7 @@ namespace TTbarAnalysis
 				
 	    WritePrimaries(opera, pricol, evt->getCollection(_colEGPName), relation);
 	    //WriteZombies(trashcol, maincol, evt->getCollection("MCParticlesSkimmed"), relation, trackrelcol);
-	    WritePurgatory(pricol, evt->getCollection( "FinalVertex" ), maincol, evt->getCollection(_colEGPName), relation, evt->getCollection("MCParticlesSkimmed"));
+	    WritePurgatory(pricol, evt->getCollection( _colFinalVertex ), maincol, evt->getCollection(_colEGPName), relation, evt->getCollection(_MCcolName));
 	    _primaryTree->Fill();
 	    _purgatoryTree->Fill();
 	    _trashTree->Fill();//*/
@@ -616,7 +635,7 @@ namespace TTbarAnalysis
 	Track * trashtrack = dynamic_cast< Track * >(trashcol->getElementAt(i)); 
 	_trashVtxHits[i] = trashtrack->getSubdetectorHitNumbers()[0];
 	_trashTpcHits[i] = trashtrack->getSubdetectorHitNumbers()[6];
-	ReconstructedParticle * trashreco = myTrackOperator.ReconstructParticle(trashtrack);
+	ReconstructedParticle * trashreco = myTrackOperator.ReconstructParticle(trashtrack,_Bfield);
 	PrintParticle(trashreco);
 	MCParticle * trashmc = CompareToCollection(trashreco, mccol, trackrel, true);
 	if (!trashmc) 
@@ -1609,7 +1628,7 @@ namespace TTbarAnalysis
 	for (int i = 0; i < tracknumber; i++) 
 	  {
 	    Track * track = dynamic_cast<Track *>(trash->getElementAt(i));
-	    ReconstructedParticle * particle = myTrackOperator.ReconstructParticle(track);
+	    ReconstructedParticle * particle = myTrackOperator.ReconstructParticle(track,_Bfield);
 	    if (!IsDublicate(particle, *particles) && !IsDublicate(particle, jetparticles)) 
 	      {
 		//PrintParticle(particle);

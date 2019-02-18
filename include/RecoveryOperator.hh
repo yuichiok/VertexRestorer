@@ -30,7 +30,7 @@ namespace TTbarAnalysis
 		//
 		//	Constructors
 		//
-			RecoveryOperator (EVENT::Vertex * vertex, EVENT::LCCollection *pfos);
+	  RecoveryOperator (EVENT::Vertex * vertex, EVENT::LCCollection *pfos, float bfield);
 			virtual ~RecoveryOperator () {};
 			std::vector< EVENT::ReconstructedParticle * > * getVertexParticles(EVENT::LCCollection * secvtx, std::vector< EVENT::Vertex * > * tagged);
 			std::vector< EVENT::ReconstructedParticle * > getTrackParticles(EVENT::LCCollection * secvtx, std::vector< EVENT::ReconstructedParticle * > * particles = NULL);
@@ -66,6 +66,7 @@ namespace TTbarAnalysis
 			EVENT::Vertex * myPrimary;
 			float _aParameter;
 			float _bParameter;
+	  float _Bfield;
 			EVENT::LCCollection * myPFOs;
 			int myTotalTracksCounter;
 		//

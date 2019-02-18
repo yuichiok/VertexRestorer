@@ -103,6 +103,8 @@ namespace TTbarAnalysis
 	 protected:
 
 	  std::string _colName ;
+	  std::string _MCcolName;
+	  std::string _colFinalVertex;
 	  std::string _colTrashCanName ;
 	  std::string _colRelName ;
 	  std::string _colPriName ;
@@ -244,6 +246,7 @@ namespace TTbarAnalysis
 
 	  float _offsetCut;
 	  float _angleCut;
+	  float _Bfield;
 	  int _ntest;
 	  int _ntest2;
 	  float _testparameter[MAXP];
