@@ -493,6 +493,26 @@ namespace TTbarAnalysis
 	std::cout<<_Test<<std::endl;
 	if (!_Test) 
 	  {
+			#if 1
+			// Test Implementation for root output //
+
+	    std::cout<<" save histo "<<std::endl;                                                                                                
+	    ///
+	    vector < MyReconstructedParticle * > * result = RestoreVertices(jetcol, relcol, seccol, trashcol);
+
+	    std::cout<<" here1 "<<std::endl;                                                                                                
+
+	    LCCollection* bstarcol = evt->getCollection( _colBStarName );
+	    CompareCollectionsRel(result, evt->getCollection(_colEGPName), bstarcol , trackrelcol); // relation
+	    _Tree->Fill();
+				
+	    WritePrimaries(opera, pricol, evt->getCollection(_colEGPName), relation);
+
+			///////////////////////////////////////
+			#endif
+
+	    std::cout<<" here4 "<<std::endl;                                                                                                
+
 	    LCCollection* secRPcol = evt->getCollection( _colSecRPName );
 	    IMPL::LCCollectionVec * newjetcol = new IMPL::LCCollectionVec ( EVENT::LCIO::RECONSTRUCTEDPARTICLE ) ;
 	    newjetcol->setSubset();
@@ -562,6 +582,9 @@ namespace TTbarAnalysis
 		pidh.setParticleID(jetpart, 42, 9999, 0.0, newalid, params);
 	      }
 	    newjetcol->setSubset( true);
+
+			std::cout << "newjetcol = " << newjetcol << std::endl;
+
 	    evt->addCollection( newjetcol, _outputjetcolName ) ;
 	    CopyParameters(seccol->parameters (), newseccol->parameters ());
 	    evt->addCollection( newseccol, _outputcolName ) ;
@@ -751,6 +774,9 @@ namespace TTbarAnalysis
   }
   void VertexRestorer::WritePurgatory(LCCollection * pricol, LCCollection * sec, LCCollection * pfos, LCCollection *egprongs, LCCollection *rel, LCCollection *mccol)
   {
+
+		std::cout << "test output" << std::endl;
+
     Vertex * primary = dynamic_cast< Vertex * >(pricol->getElementAt(0));
     double * pos = MathOperator::toDoubleArray(primary->getPosition(), 3);
     vector < ReconstructedParticle * > primaries = primary->getAssociatedParticle()->getParticles();
@@ -830,6 +856,7 @@ namespace TTbarAnalysis
 	      << " purgatories: " << _purgatoryTotal
 	      << " PFOs: " << pfocharge 
 	      << "\n";
+
 
   }
   MCParticle * VertexRestorer::CompareToCollection(EVENT::ReconstructedParticle * particle, EVENT::LCCollection * prongs, EVENT::LCCollection * rel, bool byTrack)
