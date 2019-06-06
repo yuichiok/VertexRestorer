@@ -493,14 +493,10 @@ namespace TTbarAnalysis
 	std::cout<<_Test<<std::endl;
 	if (!_Test) 
 	  {
-			#if 1
+			#if 0
 			// Test Implementation for root output //
 
-	    std::cout<<" save histo "<<std::endl;                                                                                                
-	    ///
 	    vector < MyReconstructedParticle * > * result = RestoreVertices(jetcol, relcol, seccol, trashcol);
-
-	    std::cout<<" here1 "<<std::endl;                                                                                                
 
 	    LCCollection* bstarcol = evt->getCollection( _colBStarName );
 	    CompareCollectionsRel(result, evt->getCollection(_colEGPName), bstarcol , trackrelcol); // relation
@@ -510,8 +506,6 @@ namespace TTbarAnalysis
 
 			///////////////////////////////////////
 			#endif
-
-	    std::cout<<" here4 "<<std::endl;                                                                                                
 
 	    LCCollection* secRPcol = evt->getCollection( _colSecRPName );
 	    IMPL::LCCollectionVec * newjetcol = new IMPL::LCCollectionVec ( EVENT::LCIO::RECONSTRUCTEDPARTICLE ) ;
