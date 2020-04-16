@@ -314,7 +314,8 @@ namespace TTbarAnalysis
 		//float anglecut = 0.1/1.78 - 0.1*std::atan(p/40.0 - 1.0)/1.7814;
 		float p = MathOperator::getModule(primary->getMomentum());
 		float anglecut = 0.08; // 0.08
-		float deviation = myTrackOperator.GetOffsetSignificance(primary);
+		//float deviation = myTrackOperator.GetOffsetSignificance(primary);
+		float deviation = myTrackOperator.GetOffsetSignificance(primary,primaryPosition);
                 float deviationD0 = myTrackOperator.GetD0Significance(primary);
 		//float deviation = primaryOffset /accuracy;
 		//bool result = (primaryOffset /accuracy  > 110.0 * angle + 0.2  || angle < 0.005) &&

@@ -100,12 +100,13 @@ namespace TTbarAnalysis
     float sigmad0 = covMatrix[0];                                                                                        
     return std::abs(d0/std::sqrt(sigmad0));
   } 
-	float TrackOperator::GetOffsetSignificance(EVENT::ReconstructedParticle * particle)
+	float TrackOperator::GetOffsetSignificance(EVENT::ReconstructedParticle * particle, double * primaryPosition = 0)
 	{
 		Track * track = particle->getTracks()[0];
 		const vector<float> covMatrix = track->getCovMatrix();
 		float d0 = track->getD0();
-		float z0 = track->getZ0();
+		//float z0 = track->getZ0();
+		float z0 = track->getZ0() - primaryPosition[2];
 		float sigmad0 = covMatrix[0];
 		float sigmaz0d0 = covMatrix[6];
 		float sigmaz0 = covMatrix[9];
