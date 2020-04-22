@@ -691,6 +691,7 @@ namespace TTbarAnalysis
   {
     Vertex * primary = dynamic_cast< Vertex * >(pricol->getElementAt(0));
     double * pos = MathOperator::toDoubleArray(primary->getPosition(), 3);
+
     vector < ReconstructedParticle * > primaries = primary->getAssociatedParticle()->getParticles();
     _primariesTotal = primaries.size();
     _primeT = sqrt(primary->getPosition()[0] * primary->getPosition()[0] + primary->getPosition()[1] * primary->getPosition()[1]);
@@ -720,7 +721,7 @@ namespace TTbarAnalysis
 	_primeFtdHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[5];
 	_primeEtdHits[i] = primaries[i]->getTracks()[0]->getSubdetectorHitNumbers()[10];
 	//streamlog_out(DEBUG) << "Offset: " << _primeOffset[i] << "; error^2: " << _primeError[i] << '\n'; 
-	_primeDeviation[i] = myTrackOperator.GetOffsetSignificance(primaries[i]); //_primeOffset[i] / _primeError[i]; 
+	_primeDeviation[i] = myTrackOperator.GetOffsetSignificance(primaries[i],pos); //_primeOffset[i] / _primeError[i]; 
 	//streamlog_out(DEBUG) << "Offset: " << _primeOffset[i] << " deviation: " << _primeDeviation[i] << '\n';
 				
       }
@@ -877,6 +878,7 @@ namespace TTbarAnalysis
   void VertexRestorer::CompareCollectionsRel(std::vector< MyReconstructedParticle * > * detected, EVENT::LCCollection * prongs, EVENT::LCCollection * bstar, EVENT::LCCollection *  rel)
   {
     _detectedTotal = detected->size();
+		double * primaryPosition = MathOperator::toDoubleArray(myPrimary->getPosition(),3);
     _missedTotal = prongs->getNumberOfElements();
     for (int i = 0; i < _missedTotal; i++) 
       {
@@ -900,7 +902,7 @@ namespace TTbarAnalysis
 	    //_missedError[_missedDetected] = GetError(particle);
 	    _missedError[_missedDetected] = detected->at(i)->GetAccuracy();
 	    _missedMomentum[_missedDetected] = MathOperator::getModule(particle->getMomentum());
-	    _missedDeviation[_missedDetected] =  myTrackOperator.GetOffsetSignificance(particle);// detected->at(i)->GetOffset() / _missedError[_missedDetected];
+	    _missedDeviation[_missedDetected] =  myTrackOperator.GetOffsetSignificance(particle,primaryPosition);// detected->at(i)->GetOffset() / _missedError[_missedDetected];
 	    _missedD0Deviation[_missedDetected] =  std::abs(particle->getTracks()[0]->getD0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[0])); //
 	    _missedZ0Deviation[_missedDetected] =  std::abs(particle->getTracks()[0]->getZ0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[9])); //
 	    _missedZ0[_missedDetected] =  particle->getTracks()[0]->getZ0(); //
@@ -930,7 +932,7 @@ namespace TTbarAnalysis
 	    _fakeError[_fakeDetected] = detected->at(i)->GetAccuracy();
 	    //_fakeError[_fakeDetected] = GetError(particle);
 	    _fakeMomentum[_fakeDetected] = MathOperator::getModule(particle->getMomentum());
-	    _fakeDeviation[_fakeDetected] =   myTrackOperator.GetOffsetSignificance(particle); //detected->at(i)->GetOffset() / _fakeError[_fakeDetected];
+	    _fakeDeviation[_fakeDetected] =   myTrackOperator.GetOffsetSignificance(particle,primaryPosition); //detected->at(i)->GetOffset() / _fakeError[_fakeDetected];
 	    _fakeD0Deviation[_fakeDetected] =  std::abs(particle->getTracks()[0]->getD0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[0])); //
 	    _fakeZ0Deviation[_fakeDetected] =  std::abs(particle->getTracks()[0]->getZ0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[9])); //
 	    _fakeZ0[_fakeDetected] =  particle->getTracks()[0]->getZ0(); //
@@ -1304,7 +1306,7 @@ namespace TTbarAnalysis
     int ntracks = sec->getAssociatedParticle()->getParticles().size();
     float z = MathOperator::getModule(primary->getMomentum()) / MathOperator::getModule(jet->getMomentum());
     float anglecut = 0.9;//(abs(costheta) > 0.9)? 0.05: 0.1;
-    float deviation = myTrackOperator.GetOffsetSignificance(primary);
+    float deviation = myTrackOperator.GetOffsetSignificance(primary,primaryPosition);
     observable = - observable / abs(observable) * deviation;  //MathOperator::getModule(aright) / primaryOffsetTest;//trackDistance;//MathOperator::getAngle(aright, primary->getMomentum());
     //float deviation = primaryOffset /accuracy;
     //bool result = //(primaryOffset /accuracy  > 2.5 *std::atan(angle * 100) || angle < 0.005)   &&

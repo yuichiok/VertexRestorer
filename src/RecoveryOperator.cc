@@ -316,7 +316,7 @@ namespace TTbarAnalysis
 		float anglecut = 0.08; // 0.08
 		//float deviation = myTrackOperator.GetOffsetSignificance(primary);
 		float deviation = myTrackOperator.GetOffsetSignificance(primary,primaryPosition);
-                float deviationD0 = myTrackOperator.GetD0Significance(primary);
+		float deviationD0 = myTrackOperator.GetD0Significance(primary);
 		//float deviation = primaryOffset /accuracy;
 		//bool result = (primaryOffset /accuracy  > 110.0 * angle + 0.2  || angle < 0.005) &&
 		//bool result = (primaryOffset /accuracy  > 80.0 * angle + 0.5 || angle < 0.005) && // BEST
