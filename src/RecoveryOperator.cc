@@ -326,8 +326,12 @@ namespace TTbarAnalysis
 		//bool result = ( deviation > 15*sqrt(angle) || angle < 0.01);// &&
 		//irles original 
 		//bool result = ( deviation > 25*sqrt(angle)+1.0 || angle < 0.001) &&
-		bool result =   ( deviationD0 > 10.*sqrt(angle)+1.5 || angle < 0.001) &&
-		  // irles tests small detector ( deviationD0 > 10.*sqrt(angle)+2. && angle > 0.02) &&
+		
+		//bool result =   ( deviationD0 > 10.*sqrt(angle)+1.5 || angle < 0.001) &&
+		// Yuichi test 04_24_20
+		bool result =   ( deviation > 10.*sqrt(angle)+1.5 || angle < 0.001) &&
+
+		// irles tests small detector ( deviationD0 > 10.*sqrt(angle)+2. && angle > 0.02) &&
 		//irles bbbar bool result = ( deviation > atan(40*angle)+4 || angle < 0.001 ) &&
 		  //irles bbbar ?? ( deviation < 0.3/angle+3) &&
 		//irles  original
