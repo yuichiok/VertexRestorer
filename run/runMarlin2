@@ -1,0 +1,49 @@
+#!/bin/bash -x
+
+flist=$1
+start=$2
+end=$3
+inputxml=$4
+gearxml=$5
+isolep=$6
+model=$7
+chiral=$8
+
+#outputDir=/hsm/ilc/users/yokugawa/preset_N_run/${model}/semiLep/${chiral}/${isolep}
+outputDir=/group/ilc/users/yokugawa/TTbar/${model}/${chiral}/semiLep/${isolep}
+logDir=./log
+
+tmpxmlDir=./tmpxml
+xmlDir=./myxml
+
+for count in $(seq $start $end)
+  do
+  input=`head -${count} ${flist} | tail -1`
+  echo ${input}
+  filename=`basename ${input}`
+  filename="${filename%.*}"
+  echo ${filename}
+  tmpxml=${tmpxmlDir}/${filename}.xml
+  lastxml=${xmlDir}/${filename}.xml
+  
+  log=${logDir}/${filename}.log
+  
+	rootout4=${outputDir}/vertex_restorer_out/${filename}_VR.root
+	rootout5=${outputDir}/TrashRecoProcessor_out/after_vtx_recovery/${filename}_TRP_after.root
+  #rootout6=${outputDir}/QQbarProcessor_out/${filename}.root
+	slcioout=${outputDir}/slcio_final/${filename}.slcio
+
+	if [ "$model" == "l5" ]; then
+		bfield=3.5
+		sed -e "/<!-- INPUT.slcio -->/i $input" $inputxml | sed -e "/<!-- GEAR.xml -->/i $gearxml" | sed -e "/<!-- OUTPUT4.root -->/i $rootout4" | sed -e "/<!-- OUTPUT5.root -->/i $rootout5" | sed -e "/<!-- OUTPUT.slcio -->/i $slcioout" | sed -e "/<!-- Parameter bfield -->/i $bfield" > $lastxml
+	elif [ "$model" == "s5" ]; then
+		bfield=4.0
+		sed -e "/<!-- INPUT.slcio -->/i $input" $inputxml | sed -e "/<!-- GEAR.xml -->/i $gearxml" | sed -e "/<!-- OUTPUT4.root -->/i $rootout4" | sed -e "/<!-- OUTPUT5.root -->/i $rootout5" | sed -e "/<!-- OUTPUT.slcio -->/i $slcioout" | sed -e "/<!-- Parameter bfield -->/i $bfield" > $lastxml
+	fi
+
+  ${MARLIN}/bin/Marlin $lastxml > $log 2>&1
+  
+  echo "$count event finished"
+  
+done
+

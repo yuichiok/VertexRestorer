@@ -1,0 +1,47 @@
+#!/bin/sh
+
+data_input=$1
+id1=$2
+id2=$3
+nfirst=$4
+nlast=$5
+nrun=$6
+inputxml=$7
+gearxml=$8
+isolep=$9
+model=${10}
+chiral=${11}
+
+flist=list/${id1}_${id2}_${model}.list
+if [ ! -f ${flist} ] ; then
+    `find ${data_input} -name *${id1}*.slcio | sort > ${flist}`
+    `find ${data_input} -name *${id2}*.slcio | sort >> ${flist}`
+else
+	rm -rf ${flist}
+    `find ${data_input} -name *${id1}*.slcio | sort > ${flist}`
+    `find ${data_input} -name *${id2}*.slcio | sort >> ${flist}`
+fi
+
+nf=`more ${flist} | wc -l`
+echo "number of files for process ${id1} and ${id2}: " ${nf}
+
+if [ ${nlast} -le 0 ] || [ ${nlast} -ge ${nf} ] ; then
+    nlast=${nf}
+fi
+
+njobs=$[($nlast-$nfirst)/$nrun+1]
+seqlist=`seq 1 $njobs`
+for seq in $seqlist; do
+    nrun0=$[$nfirst+$nrun*($seq-1)]
+    nrun1tmp=$[$nrun0+$nrun-1]
+    if [ $nrun1tmp -le $nlast ] ; then
+	nrun1=$nrun1tmp
+    else
+	nrun1=$nlast
+    fi
+    echo ${id1} ${id2} $nrun0 $nrun1 $nrun $njobs
+    log=./sublog/${id1}"_"${id2}"_"`printf %03d $seq`.log
+    bsub -q s -J "ana"`printf %03d $seq` -o $log "./runMarlin2 ${flist} $nrun0 $nrun1 $inputxml $gearxml $isolep $model $chiral"
+#    ./runMarlin2 ${flist} $nrun0 $nrun1 $inputxml
+#    sleep 5
+done

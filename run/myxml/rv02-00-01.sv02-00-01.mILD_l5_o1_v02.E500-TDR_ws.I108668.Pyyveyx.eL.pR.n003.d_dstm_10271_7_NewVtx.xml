@@ -1,0 +1,109 @@
+<marlin>
+
+<!--########  Execute  ######################################## -->
+
+<execute>
+  <processor name="VertexRestorerProcessor"/> 
+  <processor name="MyTrashRecoProcessorAfter"/>
+  <processor name="DSTOutput"/>
+</execute>
+
+<!--########  Global  ######################################## -->
+
+<global>
+	<parameter name="LCIOInputFiles">
+/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n003.d_dstm_10271_7_NewVtx.slcio
+	 <!-- INPUT.slcio --> 
+	</parameter>
+	<parameter name="GearXMLFile">
+gear_ILD_l5_v02.xml
+   <!-- GEAR.xml -->
+	</parameter>
+	<parameter name="SkipNEvents" value="0"/>
+	<parameter name="SupressCheck" value="false"/>
+	<parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> MESSAGE </parameter>
+	<parameter name="RandomSeed" value="1234567890" />
+</global>
+
+<!--######## Processor  ######################################## -->
+
+<!--########  VertexRestorer  ######################################## -->
+
+<processor name="VertexRestorerProcessor" type="VertexRestorer">
+  <parameter name="ROOTFileName" type="string">
+/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/vertex_restorer_out/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n003.d_dstm_10271_7_NewVtx_VR.root
+    <!-- OUTPUT4.root -->
+  </parameter>
+	<!--<parameter name="PFOCollection" type="string"> PandoraPFOs </parameter>-->
+	<parameter name="PFOCollection" type="string"> PandoraPFOs_withoutLepton </parameter>
+  <parameter name="MCCollectionName" type="string"> MCParticle </parameter>
+  <parameter name="PrimaryCollectionName" type="string"> PrimaryVertex_NewVtx </parameter>
+  <parameter name="OutputCollectionName" type="string"> RecoveredJets_vtx </parameter>
+  <parameter name="OutputJetCollectionName" type="string"> RecoveredJets </parameter>
+  <parameter name="OutputRelCollectionName" type="string"> RecoveredJets_rel </parameter>
+  <parameter name="OutputRelRPCollectionName" type="string"> RecoveredJets_vtx_RP </parameter>
+  <parameter name="SecondaryCollectionName" type="string"> FinalJets_vtx </parameter>
+  <parameter name="SecondaryRPCollectionName" type="string"> FinalJets_vtx_RP </parameter>
+  <parameter name="V0CollectionName" type="string"> BuildUpVertex_V0_NewVtx </parameter>
+  <parameter name="JetCollectionName" type="string"> FinalJets </parameter>
+  <parameter name="MissedCollectionName" type="string"> MissedParticles </parameter>
+  <parameter name="MCMissedCollectionName" type="string"> MCMissedParticles </parameter>
+  <parameter name="NotUsedTracksCollectionName" type="string"> MarlinTrkTracks </parameter>
+  <parameter name="RecoMcTruthCollectionName" type="string"> RecoMCTruthLink </parameter>
+  <parameter name="MissedVtxCollectionName" type="string"> MissedParticlesVtx </parameter>
+  <parameter name="BStarCollectionName" type="string"> BStar </parameter>
+  <parameter name="MCVertexCollectionName" type="string"> MCVertex </parameter>
+  <parameter name="EGProngsCollectionName" type="string"> EGProngs </parameter>
+  <parameter name="JetRelCollectionName" type="string"> FinalJets_rel </parameter>
+  <parameter name="Bfield" type="float">
+3.5
+	<!-- Parameter bfield -->
+	</parameter>
+  <parameter name="UseTracks" type="int" value="1" />
+  <parameter name="TestEfficiency" type="int" value="0" />
+  <parameter name="angleCut" type="float" value="0.05" />
+  <parameter name="offsetCut" type="float" value="0.05" />
+  <parameter name="a" type="float" value="0.005" />
+  <parameter name="b" type="float" value="0.01" />
+</processor>
+
+<!--########  MyTrashRecoProcessor (After Vertex Recovery) ######################################## -->
+
+<processor name="MyTrashRecoProcessorAfter" type="TrashRecoProcessor">
+  <parameter name="ROOTFileName" type="string">
+/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/TrashRecoProcessor_out/after_vtx_recovery/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n003.d_dstm_10271_7_NewVtx_TRP_after.root
+    <!-- OUTPUT5.root -->
+  </parameter>
+  <parameter name="Verbosity" options="DEBUG0-4,MESSAGE0-4,WARNING0-4,ERROR0-4,SILENT"> DEBUG </parameter>
+  <!-- Input collection name, MCParticlesSkimmed is preferred -->
+  <parameter name="SecondaryCollectionName" type="string" lcioInType="Vertex"> BuildUpVertex_NewVtx </parameter>
+  <parameter name="PFOCollectionName" type="string" lcioInType="ReconstructedParticle"> PandoraPFOs_withoutLepton </parameter> <!-- NOT PandoraPFOs_withoutLepton !!! -->
+  <parameter name="PrimaryCollectionName" type="string" lcioInType="Vertex"> PrimaryVertex_NewVtx </parameter>
+  <parameter name="OutputRelName" type="string" lcioInType="LCRelation"> RecoMCTruthLink </parameter>
+  <parameter name="MCVertexCollectionName" type="string" lcioInType="Vertex"> MCVertex </parameter>
+  <parameter name="JetCollectionName" type="string" lcioInType="ReconstructedParticle"> RecoveredJets </parameter>
+  <parameter name="JetRelCollectionName" type="string" lcioInType="LCRelation"> RecoveredJets_rel </parameter>
+  <parameter name="TrackRelCollectionName" type="string" lcioInType="LCRelation"> MarlinTrkTracksMCTruthLink </parameter>
+  <parameter name="QuarksCollectionName" type="string" lcioInType="MCParticle"> MCbquarks </parameter>
+  <parameter name="EGProngsCollectionName" type="string" lcioInType="MCParticle"> EGProngs </parameter>
+	<!-- Output Collections -->
+	<parameter name="OutputMissedName" type="string" lcioType="ReconstructedParticle"> MissedParticles_Recovered </parameter>
+	<parameter name="OutputMCMissedName" type="string" lcioType="MCParticle"> MCMissedParticles_Recovered </parameter>
+	<parameter name="OutputMissedVtxName" type="string" lcioType="ReconstructedParticle"> MissedParticlesVtx_Recovered </parameter>
+	<parameter name="OutputTaggedName" type="string" lcioType="Vertex"> TaggedVertices_Recovered </parameter>
+	<parameter name="RecoProngsCollectionName" type="string" lcioType="ReconstructedParticle"> RecoProngs_Recovered </parameter>
+	<parameter name="RecoProngsTracksCollectionName" type="string" lcioType="Track"> RecoProngsTracks_Recovered </parameter>
+</processor>
+
+<!--########  DSTOutput  ######################################## -->
+<processor name="DSTOutput" type="LCIOOutputProcessor">
+  <!--DST output: drop all hits, skim MCParticles and keep final Tracks, Clusters and  ReconstructedParticles-->
+  <parameter name="LCIOOutputFile" type="string" >
+/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio_final/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n003.d_dstm_10271_7_NewVtx.slcio
+   <!-- OUTPUT.slcio -->
+  </parameter>
+  <parameter name="LCIOWriteMode" type="string" value="WRITE_NEW"/>
+  <!--parameter name="SplitFileSizekB" type="int" value="1992294"/-->
+</processor>
+
+</marlin>

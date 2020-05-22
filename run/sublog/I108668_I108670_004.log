@@ -1,0 +1,76 @@
+Sender: LSF System <lsfadmin@cb554>
+Subject: Job 4819137: <ana004> in cluster <centralcluster> Done
+
+Job <ana004> was submitted from host <cw03> by user <yokugawa> in cluster <centralcluster> at Fri May 22 00:44:17 2020
+Job was executed on host(s) <cb554>, in queue <s>, as user <yokugawa> in cluster <centralcluster> at Fri May 22 00:44:18 2020
+</home/ilc/yokugawa> was used as the home directory.
+</home/ilc/yokugawa/VertexRestorerNew/run> was used as the working directory.
+Started at Fri May 22 00:44:18 2020
+Terminated at Fri May 22 00:48:11 2020
+Results reported at Fri May 22 00:48:11 2020
+
+Your job looked like:
+
+------------------------------------------------------------
+# LSBATCH: User input
+./runMarlin2 list/I108668_I108670_l5.list 10 10 VRsteer.xml gear_ILD_l5_v02.xml electron l5 eLpR
+------------------------------------------------------------
+
+Successfully completed.
+
+Resource usage summary:
+
+    CPU time :                                   223.04 sec.
+    Max Memory :                                 140 MB
+    Average Memory :                             109.16 MB
+    Total Requested Memory :                     4000.00 MB
+    Delta Memory :                               3860.00 MB
+    Max Swap :                                   -
+    Max Processes :                              4
+    Max Threads :                                5
+    Run time :                                   232 sec.
+    Turnaround time :                            234 sec.
+
+The output (if any) follows:
+
++ flist=list/I108668_I108670_l5.list
++ start=10
++ end=10
++ inputxml=VRsteer.xml
++ gearxml=gear_ILD_l5_v02.xml
++ isolep=electron
++ model=l5
++ chiral=eLpR
++ outputDir=/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron
++ logDir=./log
++ tmpxmlDir=./tmpxml
++ xmlDir=./myxml
+++ seq 10 10
++ for count in '$(seq $start $end)'
+++ tail -1
+++ head -10 list/I108668_I108670_l5.list
++ input=/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.slcio
++ echo /group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.slcio
+/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.slcio
+++ basename /group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.slcio
++ filename=rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.slcio
++ filename=rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx
++ echo rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx
+rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx
++ tmpxml=./tmpxml/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.xml
++ lastxml=./myxml/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.xml
++ log=./log/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.log
++ rootout4=/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/vertex_restorer_out/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx_VR.root
++ rootout5=/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/TrashRecoProcessor_out/after_vtx_recovery/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx_TRP_after.root
++ slcioout=/group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio_final/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.slcio
++ '[' l5 == l5 ']'
++ bfield=3.5
++ sed -e '/<!-- OUTPUT5.root -->/i /group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/TrashRecoProcessor_out/after_vtx_recovery/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx_TRP_after.root'
++ sed -e '/<!-- OUTPUT.slcio -->/i /group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio_final/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.slcio'
++ sed -e '/<!-- Parameter bfield -->/i 3.5'
++ sed -e '/<!-- OUTPUT4.root -->/i /group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/vertex_restorer_out/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx_VR.root'
++ sed -e '/<!-- GEAR.xml -->/i gear_ILD_l5_v02.xml'
++ sed -e '/<!-- INPUT.slcio -->/i /group/ilc/users/yokugawa/TTbar/l5/eLpR/semiLep/electron/slcio/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.slcio' VRsteer.xml
++ /cvmfs/ilc.desy.de/sw/x86_64_gcc49_sl6/v02-00-02/Marlin/v01-16/bin/Marlin ./myxml/rv02-00-01.sv02-00-01.mILD_l5_o1_v02.E500-TDR_ws.I108668.Pyyveyx.eL.pR.n004.d_dstm_10271_9_NewVtx.xml
++ echo '10 event finished'
+10 event finished
