@@ -2,3 +2,6 @@ build/
 test/
 lib/
 CMakeLists.txt
+run/log/
+run/sublog/
+run/list/
