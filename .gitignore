@@ -5,3 +5,4 @@ CMakeLists.txt
 run/log/
 run/sublog/
 run/list/
+run/myxml/
