@@ -356,7 +356,8 @@ namespace TTbarAnalysis
 	return;
       }
     streamlog_out(DEBUG) << "|\t" << track->getD0() 
-	      << "|\t" << track->getZ0() 
+	      //<< "|\t" << track->getZ0()
+          << "|\t" << track->getZ0()
 	      << "|\t" << track->getPhi() 
 	      << "|\t" << track->getOmega() 
 	      << "|\t" << track->getTanLambda()
@@ -904,8 +905,8 @@ namespace TTbarAnalysis
 	    _missedMomentum[_missedDetected] = MathOperator::getModule(particle->getMomentum());
 	    _missedDeviation[_missedDetected] =  myTrackOperator.GetOffsetSignificance(particle,primaryPosition);// detected->at(i)->GetOffset() / _missedError[_missedDetected];
 	    _missedD0Deviation[_missedDetected] =  std::abs(particle->getTracks()[0]->getD0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[0])); //
-	    _missedZ0Deviation[_missedDetected] =  std::abs(particle->getTracks()[0]->getZ0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[9])); //
-	    _missedZ0[_missedDetected] =  particle->getTracks()[0]->getZ0(); //
+	    _missedZ0Deviation[_missedDetected] =  std::abs( (particle->getTracks()[0]->getZ0() - primaryPosition[2] ) / std::sqrt(particle->getTracks()[0]->getCovMatrix()[9])); //
+	    _missedZ0[_missedDetected] =  particle->getTracks()[0]->getZ0() - primaryPosition[2]; //
 	    _missedD0[_missedDetected] =  particle->getTracks()[0]->getD0(); 
 	    _missedZ0Error[_missedDetected] =  particle->getTracks()[0]->getCovMatrix()[9];
 	    _missedD0Error[_missedDetected] =  particle->getTracks()[0]->getCovMatrix()[0];
@@ -934,8 +935,8 @@ namespace TTbarAnalysis
 	    _fakeMomentum[_fakeDetected] = MathOperator::getModule(particle->getMomentum());
 	    _fakeDeviation[_fakeDetected] =   myTrackOperator.GetOffsetSignificance(particle,primaryPosition); //detected->at(i)->GetOffset() / _fakeError[_fakeDetected];
 	    _fakeD0Deviation[_fakeDetected] =  std::abs(particle->getTracks()[0]->getD0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[0])); //
-	    _fakeZ0Deviation[_fakeDetected] =  std::abs(particle->getTracks()[0]->getZ0() / std::sqrt(particle->getTracks()[0]->getCovMatrix()[9])); //
-	    _fakeZ0[_fakeDetected] =  particle->getTracks()[0]->getZ0(); //
+	    _fakeZ0Deviation[_fakeDetected] =  std::abs( ( particle->getTracks()[0]->getZ0() - primaryPosition[2] ) / std::sqrt(particle->getTracks()[0]->getCovMatrix()[9])); //
+	    _fakeZ0[_fakeDetected] =  particle->getTracks()[0]->getZ0() - primaryPosition[2]; //
 	    _fakeD0[_fakeDetected] =  particle->getTracks()[0]->getD0();               
 	    _fakeZ0Error[_fakeDetected] =  particle->getTracks()[0]->getCovMatrix()[9];                                                                      
 	    _fakeD0Error[_fakeDetected] =  particle->getTracks()[0]->getCovMatrix()[0];
