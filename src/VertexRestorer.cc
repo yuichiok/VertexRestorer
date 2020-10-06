@@ -852,7 +852,7 @@ namespace TTbarAnalysis
     if (obj.size() < 1)
       {
 	streamlog_out(DEBUG) << "Particle was not generated!\n";
-	return false;
+	return NULL;
       }
     MCParticle * winner = NULL;
     float maxweight = 0.90;
