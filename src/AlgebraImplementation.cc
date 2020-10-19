@@ -1,8 +1,10 @@
 #include "TMath.h"
 #include "streamlog/streamlog.h"
 #include "marlin/Global.h"
-#include <gear/BField.h>
-#include <gearimpl/Vector3D.h>
+//#include <gear/BField.h>
+//#include <gearimpl/Vector3D.h>
+
+#include <GeometryUtil.h>
 
 #include "AlgebraImplementation.hh"
 
@@ -67,7 +69,8 @@ namespace TTbarAnalysis
 	  const int rows      = 3; // n rows jacobian
 	  const int columns   = 4; // n columns jacobian
 
-	  double bField       = Global::GEAR->getBField().at(gear::Vector3D(0,0,0)).z() ;
+//	  double bField       = Global::GEAR->getBField().at(gear::Vector3D(0,0,0)).z() ;
+  	  double bField       = MarlinUtil::getBzAtOrigin() ;
 	  const double CT     = 2.99792458E-4;
 
 	  double track_omega  = mytrack->getOmega();

@@ -25,8 +25,22 @@ INCLUDE( ilcsoft_default_settings )
 
 
 FIND_PACKAGE( Marlin 1.0 REQUIRED ) # minimum required Marlin version
+
+FIND_PACKAGE( MarlinUtil 1.4 REQUIRED )
+
+FIND_PACKAGE( ROOT REQUIRED )
+FIND_PACKAGE( LCIO REQUIRED )
 INCLUDE_DIRECTORIES( ${Marlin_INCLUDE_DIRS} )
+
+INCLUDE_DIRECTORIES( ${MarlinUtil_INCLUDE_DIRS} )
+LINK_LIBRARIES( ${MarlinUtil_LIBRARIES} )
+ADD_DEFINITIONS( ${MarlinUtil_DEFINITIONS} )
+
+INCLUDE_DIRECTORIES( ${ROOT_INCLUDE_DIRS} )
+INCLUDE_DIRECTORIES( ${LCIO_INCLUDE_DIRS} )
 LINK_LIBRARIES( ${Marlin_LIBRARIES} )
+LINK_LIBRARIES( ${ROOT_LIBRARIES} )
+LINK_LIBRARIES( ${LCIO_LIBRARIES} )
 ADD_DEFINITIONS( ${Marlin_DEFINITIONS} )
 
 # optional package
@@ -39,9 +53,6 @@ ADD_DEFINITIONS( ${Marlin_DEFINITIONS} )
 #ELSE()
 #    MESSAGE( STATUS "AIDA -- not found" )
 #ENDIF()
-FIND_PACKAGE( ROOT )
-INCLUDE_DIRECTORIES( ${ROOT_INCLUDE_DIRS} )
-LINK_LIBRARIES( ${ROOT_LIBRARIES} )
 
 
 
@@ -58,7 +69,7 @@ ENDIF()
 ### LIBRARY #################################################################
 
 # definitions to pass to the compiler
-ADD_DEFINITIONS( "-g -Wall -ansi -pedantic" )
+ADD_DEFINITIONS( "-Wall -ansi -pedantic -std=gnu++11" )
 ADD_DEFINITIONS( "-Wno-long-long" )
 
 # include directories
@@ -72,4 +83,3 @@ INSTALL_SHARED_LIBRARY( ${PROJECT_NAME} DESTINATION lib )
 
 # display some variables and write them to cache
 DISPLAY_STD_VARIABLES()
-
